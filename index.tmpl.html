@@ -8,8 +8,31 @@
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="s/cheatsheet.js"></script>
     <script>
-        function doSearch(s) {
-            s = s.toLowerCase();
+        // [[txt, txtLowerCase, url, matches], ...]
+        let searchIndex = [];
+
+        function searchItemClicked(search, result) {
+            execSearch(result);
+            window.scrollTo(0, 0);
+            search.show = false;
+            search.results = [];
+        }
+
+        function searchFocused(search) {
+            //console.log("showing everything");
+            let results = [];
+            for (const el of searchIndex) {
+                const els = [el[0], el[1], el[2],
+                    []
+                ];
+                results.push(els);
+            }
+            search.results = results;
+            search.selectedIdx = 0;
+            search.show = true;
+        }
+
+        function buildSearchIndex() {
             const els = document.getElementsByClassName("index-toc-item");
             for (const el of els) {
                 const v = el.getElementsByTagName("a");
@@ -17,13 +40,31 @@
                     continue;
                 }
                 const a = v[0];
-                const txt = a.textContent.toLowerCase();
-                let show = !s || s === "" || txt.includes(s);
-                // hide / show the div containing this <a> element
-                el.style.display = show ? "block" : "none";
-                //el.style.visibility = show ? "visible" : "collapse";
+                const txt = a.textContent;
+                const uri = a.getAttribute("href");
+                let sel = [txt, txt.toLowerCase(), uri, []];
+                searchIndex.push(sel);
             }
-            return s;
+        }
+
+        function doSearch(search) {
+            // console.log("doSearch:", search.term);
+            let term = search.term.toLowerCase();
+            let results = [];
+            for (const el of searchIndex) {
+                const idx = el[1].indexOf(term);
+                if (idx !== -1) {
+                    const els = [el[0], el[1], el[2],
+                        [
+                            [idx, len(term)]
+                        ]
+                    ];
+                    results.push(els);
+                }
+            }
+            search.results = results;
+            search.selectedIdx = 0;
+            search.show = len(term) > 0;
         }
 
         function showRandomCheatsheetA() {
@@ -33,7 +74,85 @@
             el.appendChild(els[idx].cloneNode(true));
         }
 
+        function execSearch(el) {
+            console.log("execSearch:", el);
+            let url = el[2];
+            location.assign(url);
+        }
+
+        function searchKeyDown(search, ev) {
+            //console.log("searchKeyDown:", search);
+            let idx = search.selectedIdx;
+            const results = search.results;
+            if (isEnter(ev)) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                //console.log(`searchKeyDown: idx: ${idx}`);
+                if (idx >= 0 && idx < len(results)) {
+                    const el = results[idx];
+                    //console.log(`searchKeyDown: id: ${id}`);
+                    execSearch(el);
+                    search.term = "";
+                    search.result = [];
+                    search.selectedIdx = -1;
+                    search.show = false;
+                }
+                return;
+            }
+            const n = dir(ev);
+            if (n === 0) {
+                return;
+            }
+            ev.stopPropagation();
+            ev.preventDefault();
+            idx += n;
+            if (idx < 0) {
+                idx = 0;
+            }
+            const lastIdx = results.length - 1;
+            if (idx > lastIdx) {
+                idx = lastIdx;
+            }
+            search.selectedIdx = idx;
+        }
+
+        function cancelSearch(search) {
+            //console.log("cancelSearch", search);
+            const el = document.getElementById("cs-search-input");
+            el.value = "";
+            el.blur();
+            //search.term = '';
+            search.results = [];
+            search.selectedIdx = -1;
+            search.show = false;
+        }
+
+        function ensureVisible(el, visible) {
+            //console.log(el, visible);
+            if (visible) {
+                el.scrollIntoView(false);
+            }
+        }
+
+        function emptyResults(search) {
+            const empty = len(search.results) == 0;
+            //console.log("emptyResults:", empty);
+            return empty;
+        }
+
+        function noResults(search) {
+            return `no results for '${search.term}'`;
+        }
+
+        function clsSearchItem(si, isSelected) {
+            let cls = `si`;
+            if (isSelected) {
+                cls += " selected";
+            }
+            return cls;
+        }
         async function start() {
+            buildSearchIndex();
             document.addEventListener('keydown', (event) => {
                 if (event.key == '/') {
                     focusSearch();
@@ -41,7 +160,6 @@
                 }
             });
             showRandomCheatsheetA();
-            focusSearch();
         }
     </script>
     <style>
@@ -63,9 +181,33 @@
 
 <body onload="start()">
     <div class="flex flex-row align-center justify-center topnav">
-        <div x-data="{ search: '' }" x-init="$watch('search', val => { doSearch(val);})" class="flex flex-row align-center">
-            <input x-model="search" @keyup.escape="search=''" id="cs-search-input" placeholder="'/' to search {{CheatsheetsCount}} cheatsheets" type="text">
+        <div class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
+        term: '',
+        results: [],
+        selectedIdx: -1,
+        show: false
+        } }" x-init="$watch('search.term', val => { doSearch(search);})">
+            <input x-model="search.term" x-on:focus="searchFocused(search)" @keyup.escape="cancelSearch(search)" id="cs-search-input" type="text" placeholder="'/' to search" class="relative" style="width: 32em;">
+            <div x-show="search.show" class="overlay" x-on:click="cancelSearch(search)">
+                <div class="box p-0 bg-white search-results-wrap">
+                    <div class="results">
+
+                        <template x-if="emptyResults(search)">
+                            <div class="no-results" x-text="noResults(search)"></div>
+                        </template>
+
+                        <template x-for="(result, index) in search.results"">
+                            <div :class=" clsSearchItem(result, index==search.selectedIdx)" x-on:click.prevent="searchItemClicked(search, result)" x-html="hilightSearchResult(result[0], result[3])" x-effect="ensureVisible($el, index == search.selectedIdx)"></div>
+                    </template>
+                </div>
+                <div class="help">
+                    &uarr; &darr; to navigate &nbsp;&nbsp;&nbsp; &crarr; to select
+                    &nbsp;&nbsp;&nbsp; Esc to close
+                </div>
+            </div>
         </div>
+
+    </div>
     </div>
 
     <div class="index-toc">
@@ -82,15 +224,20 @@
         <center>By topic:</center>
     </div>
 
-    {{#each categories}}
-        <div class="index-toc">
-            <div> <b>{{category}}</b>:&nbsp;</div>
-            {{#each cheatsheets}}
-                <div class="with-bull"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
-            {{/each}}
-        </div>
-    {{/each}}
-
+    <table>
+        {{#categories}}
+            <tr>
+                <td><b style="white-space: nowrap;">{{category}}</b></td>
+                <td style="width:100%">
+                    <div class="index-toc">
+                        {{#cheatsheets}}
+                            <div><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
+                        {{/cheatsheets}}
+                    </div>
+                </td>
+            </tr>
+        {{/categories}}
+    </table>
 </body>
 
 </html>

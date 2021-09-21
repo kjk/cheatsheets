@@ -24,6 +24,9 @@
         }
 
         function updateLocationHash(divId) {
+            if (true) { // disabled
+                return;
+            }
             if (divId[0] == '#') {
                 divId = divId.substr(1);
             }
@@ -357,34 +360,6 @@
             padding: 0 4px;
         }
 
-        .search-results-wrap {
-            z-index: 19;
-            /* bigger than toc */
-            top: 2rem;
-
-            width: 74vw;
-            left: 13vw;
-            right: 13vw;
-
-            font-size: 90%;
-            min-height: 4rem;
-            position: fixed;
-        }
-
-        .results {
-            max-height: 40vh;
-            padding: 4px 8px;
-            line-height: 1.3em;
-            /* cursor: pointer; */
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        /* search item */
-        .si {
-            padding-right: 0.5rem;
-        }
-
         /* search item level 1 */
         .sil0 {
             padding-left: 0.5rem;
@@ -408,32 +383,6 @@
 
         .sil5 {
             padding-left: 3rem;
-        }
-
-        .si:hover {
-            background-color: #fafafa;
-            cursor: pointer;
-        }
-
-        .help {
-            color: #717274;
-            background-color: #f9f9f9;
-            padding: 8px 8px;
-            font-size: 0.7em;
-            padding-left: 10px;
-        }
-
-        .no-results {
-            padding-top: 48px;
-            padding-bottom: 48px;
-            margin-left: auto;
-            margin-right: auto;
-            /* background-color: #dddddd; */
-            text-align: center;
-        }
-
-        .selected {
-            background-color: #f4f4f4;
         }
 
         .toc2 {
@@ -474,15 +423,6 @@
         .toc2-l:hover {
             background-color: #f0f0f0;
             cursor: pointer;
-        }
-
-        .bgcol1 {
-            /* background-color: #f9f9f9; */
-            /* border-bottom: 1px solid #f0f0f0; */
-        }
-
-        .bgcol2 {
-            /* background-color: white; */
         }
     </style>
 </head>

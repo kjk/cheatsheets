@@ -1,6 +1,6 @@
 ---
 title: Alpine.js
-category: JavaScript library
+category: JavaScript libraries
 ---
 
 # Intro

@@ -80,13 +80,13 @@ func isWindows() bool {
 
 # Strings
 
-## normalizeNewLines
+## normalizeNewlines
 
 Convert Windows (CRLF) and Mac (CF) newlines to Unix (LF). Optimized for speed,
 modifies d in-place.
 
 ```go
-func normalizeNewlines(d []byte) []byte {
+func normalizeNewlinesInPlace(d []byte) []byte {
 	wi := 0
 	n := len(d)
 	for i := 0; i < n; i++ {
@@ -107,6 +107,11 @@ func normalizeNewlines(d []byte) []byte {
 
 	}
 	return d[:wi]
+}
+
+func normalizeNewlinesInPlace(d []byte) []byte {
+	d = append([]byte{}, d...)
+	return normalizeNewlinesInPlace(d)
 }
 ```
 
