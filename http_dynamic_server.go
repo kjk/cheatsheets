@@ -22,7 +22,8 @@ type URLContent interface {
 	Matches(url string) bool
 	// if Matches returns true call Send() to send the output
 	// this allows doing things like redirects
-	Send(w http.ResponseWriter, r *http.Request) error
+	// uri, if given, overrides r.URL
+	Send(w http.ResponseWriter, r *http.Request, uri string) error
 	// get all content. useful for e.g. saving a static copy to disk
 	Content() []*Content
 }
@@ -44,7 +45,7 @@ func (f *FileOnDisk) Matches(url string) bool {
 	return false
 }
 
-func (f *FileOnDisk) Send(w http.ResponseWriter, r *http.Request) error {
+func (f *FileOnDisk) Send(w http.ResponseWriter, r *http.Request, uri string) error {
 	panicIf(!fileExists(f.Path), "file '%s' doesn't exist")
 	http.ServeFile(w, r, f.Path)
 	return nil
@@ -75,7 +76,7 @@ func NewFileOnDisk(path string, url string, urls ...string) *FileOnDisk {
 
 type DynamicContent struct {
 	matches func(string) bool
-	send    func(http.ResponseWriter, *http.Request) error
+	send    func(http.ResponseWriter, *http.Request, string) error
 	content func() []*Content
 }
 
@@ -83,15 +84,15 @@ func (f *DynamicContent) Matches(uri string) bool {
 	return f.matches(uri)
 }
 
-func (f *DynamicContent) Send(w http.ResponseWriter, r *http.Request) error {
-	return f.send(w, r)
+func (f *DynamicContent) Send(w http.ResponseWriter, r *http.Request, uri string) error {
+	return f.send(w, r, uri)
 }
 
 func (f *DynamicContent) Content() []*Content {
 	return f.content()
 }
 
-func NewDynamicContent(matches func(string) bool, send func(w http.ResponseWriter, r *http.Request) error, content func() []*Content) *DynamicContent {
+func NewDynamicContent(matches func(string) bool, send func(w http.ResponseWriter, r *http.Request, uri string) error, content func() []*Content) *DynamicContent {
 	return &DynamicContent{
 		matches: matches,
 		send:    send,
@@ -113,15 +114,16 @@ func WriteServerFilesToDir(dir string, files []URLContent) {
 	}
 }
 
-// ServerFiles represents all files known to the server
-type ServerFiles struct {
-	Files []URLContent
+// ServerConfig represents all files known to the server
+type ServerConfig struct {
+	Files     []URLContent
+	CleanURLS bool
 }
 
 // returns function that will wait for SIGTERM signal (e.g. Ctrl-C) and
 // shutdown the server
-func StartServer(files *ServerFiles) func() {
-	panicIf(files == nil, "must provide files")
+func StartServer(server *ServerConfig) func() {
+	panicIf(server == nil, "must provide files")
 	httpPort := 8080
 	httpAddr := fmt.Sprintf(":%d", httpPort)
 	if isWindows() {
@@ -133,12 +135,27 @@ func StartServer(files *ServerFiles) func() {
 		if uri == "/" {
 			uri = "/index.html"
 		}
-		for _, f := range files.Files {
-			if f.Matches(uri) {
-				logf(ctx(), "handleFile: found match for '%s'\n", uri)
-				f.Send(w, r)
-				return
+		trySend := func(uri string) bool {
+			for _, f := range server.Files {
+				if f.Matches(uri) {
+					logf(ctx(), "handleFile: found match for '%s'\n", uri)
+					f.Send(w, r, uri)
+					return true
+				}
 			}
+			return false
+		}
+		if trySend(uri) {
+			return
+		}
+		ext := strings.ToLower(filepath.Ext(uri))
+		shouldRepeat := server.CleanURLS
+		switch ext {
+		case ".html", ".js", ".css", ".txt", ".xml":
+			shouldRepeat = false
+		}
+		if shouldRepeat && trySend(uri+".html") {
+			return
 		}
 		logf(ctx(), "handleFile: no match for '%s'\n", uri)
 		http.NotFound(w, r)

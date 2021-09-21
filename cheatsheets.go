@@ -18,6 +18,7 @@ import (
 )
 
 const csDir = "."
+const alpineURL = "//unpkg.com/alpinejs@3.4.0/dist/cdn.min.js"
 
 var (
 	limitCheatsheets = false
@@ -447,6 +448,7 @@ func genCheatsheetHTML(cs *cheatSheet) []byte {
 		"mdFileName":        mdFileName,
 		"content":           mdHTML,
 		"searchIndexStatic": string(searchIndexJSON),
+		"alpineURL":         alpineURL,
 	}
 
 	return []byte(raymond.MustRender(tpl, ctx))
@@ -489,6 +491,7 @@ func genIndexHTML(cheatsheets []*cheatSheet) string {
 		"cheatsheets":      cheatsheets,
 		"CheatsheetsCount": len(cheatsheets),
 		"categories":       cats,
+		"alpineURL":        alpineURL,
 	}
 	s := raymond.MustRender(tpl, ctx)
 	return s
@@ -572,7 +575,7 @@ func readCheatSheets() []*cheatSheet {
 	}
 
 	for _, cs := range cheatsheets {
-		cs.PathHTML = cs.fileNameBase + ".html"
+		cs.PathHTML = cs.fileNameBase // + ".html"
 		cs.htmlFullPath = filepath.Join(csDir, cs.PathHTML)
 	}
 

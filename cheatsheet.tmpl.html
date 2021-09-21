@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <title>{{title}} cheatsheet</title>
     <link href="/s/cheatsheet.css" rel="stylesheet" />
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="{{alpineURL}}" defer></script>
     <script src="/s/cheatsheet.js"></script>
     <script>
         // [[text, text.toLowerCase(), id], ...]
@@ -418,7 +418,7 @@
 
 <body onload="start()">
     <div class="flex flex-row align-center topnav">
-        <a href="/index.html">Cheatsheets</a>
+        <a href="/">Cheatsheets</a>
         <div>&nbsp;/&nbsp;{{title}} cheatsheet</div>
         <div class="flex-grow"></div>
         <div x-cloak class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
@@ -453,16 +453,16 @@
     </div>
 
     <div class="toc2 cols box">
-        {{#each toc}}
+        {{#toc}}
             {{#if children}}
                 <div class="toc2-h {{class}}" data-link="{{ID}}">{{content}}</div>
-                {{#each children}}
+                {{#children}}
                     <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
-                {{/each}}
+                {{/children}}
             {{else}}
                 <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
             {{/if}}
-        {{/each}}
+        {{/toc}}
     </div>
 
     <div id="start"></div>

@@ -39,8 +39,10 @@ func buildContentCheatsheets() []URLContent {
 		cs := csFindByURL(uri)
 		return cs != nil
 	}
-	csSend := func(w http.ResponseWriter, r *http.Request) error {
-		uri := r.URL.Path
+	csSend := func(w http.ResponseWriter, r *http.Request, uri string) error {
+		if uri == "" {
+			uri = r.URL.Path
+		}
 		cs := csFindByURL(uri)
 		panicIf(cs == nil, "no match for '%s'", uri)
 		html := genCheatsheetHTML(cs)
@@ -68,11 +70,10 @@ func buildContentCheatsheets() []URLContent {
 		}
 		return matches
 	}
-	csIndexSend := func(w http.ResponseWriter, r *http.Request) error {
+	csIndexSend := func(w http.ResponseWriter, r *http.Request, uri string) error {
 		logf(ctx(), "csIndexSend: '%s'\n", r.URL)
-		uri := r.URL.Path
-		if uri == "/" {
-			uri = "/index.html"
+		if uri == "" {
+			uri = r.URL.Path
 		}
 		panicIf(!csIndexMatches(uri), "no match for '%s'", uri)
 		html := genIndexHTML(cheatsheets)
@@ -94,7 +95,7 @@ func buildContentCheatsheets() []URLContent {
 	return []URLContent{csIndexDynamic, csDynamic}
 }
 
-func buildServerFiles() *ServerFiles {
+func buildServerFiles() *ServerConfig {
 	staticFiles := []string{
 		"/s/cheatsheet.css",
 		"cheatsheet.css",
@@ -112,8 +113,9 @@ func buildServerFiles() *ServerFiles {
 	cheatsheets := buildContentCheatsheets()
 	files = append(files, cheatsheets...)
 
-	return &ServerFiles{
-		Files: files,
+	return &ServerConfig{
+		Files:     files,
+		CleanURLS: true,
 	}
 }
 

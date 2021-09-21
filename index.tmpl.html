@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <title>cheatsheets</title>
     <link href="s/cheatsheet.css" rel="stylesheet" />
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="{{alpineURL}}" defer></script>
     <script src="s/cheatsheet.js"></script>
     <script>
         // [[txt, txtLowerCase, url, matches], ...]
@@ -19,7 +19,7 @@
         }
 
         function searchFocused(search) {
-            //console.log("showing everything");
+            //console.log("searchFocused");
             let results = [];
             for (const el of searchIndex) {
                 const els = [el[0], el[1], el[2],
@@ -48,7 +48,7 @@
         }
 
         function doSearch(search) {
-            // console.log("doSearch:", search.term);
+            //console.log("doSearch:", search.term);
             let term = search.term.toLowerCase();
             let results = [];
             for (const el of searchIndex) {
@@ -75,7 +75,7 @@
         }
 
         function execSearch(el) {
-            console.log("execSearch:", el);
+            //console.log("execSearch:", el);
             let url = el[2];
             location.assign(url);
         }
@@ -170,22 +170,24 @@
         #cs-search-input {
             width: 32em;
         }
+
         td {
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 4px;
             padding-top: 4px;
         }
+
         .trim {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             color: blue;
         }
+
         .trim:hover {
             background-color: lightblue;
             cursor: pointer;
         }
-
     </style>
 </head>
 
@@ -221,9 +223,11 @@
     </div>
 
     <div class="mono cols mt-4">
-        {{#each cheatsheets}}
-            <div class="index-toc-item overflow-ellipsis"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
-        {{/each}}
+        {{#cheatsheets}}
+            <div class="index-toc-item overflow-ellipsis">
+                <a href="/cheatsheet/{{PathHTML}}">{{Title}}</a>
+            </div>
+        {{/cheatsheets}}
     </div>
 
     <div class="mono mt-4" id="random-cs">
@@ -241,9 +245,9 @@
                 <td valign="top" style="width:100%">
                     <div class="cols">
                         {{#cheatsheets}}
-                        <div class="overflow-ellipsis">
-                            <a href="/cheatsheet/{{PathHTML}}">{{Title}}</a>
-                        </div>
+                            <div class="overflow-ellipsis">
+                                <a href="/cheatsheet/{{PathHTML}}">{{Title}}</a>
+                            </div>
                         {{/cheatsheets}}
                     </div>
                 </td>

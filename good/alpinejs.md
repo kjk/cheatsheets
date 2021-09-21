@@ -304,6 +304,13 @@ Hide a block of HTML until after Alpine is finished initializing its contents
 </div>
 ```
 
+You need to add this to your .css:
+```css
+[x-cloak] {
+    display: none !important;
+}
+```
+
 ## x-ignore
 
 Prevent a block of HTML from being initialized by Alpine
