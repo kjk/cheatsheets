@@ -337,10 +337,13 @@ func genHeadingTocHTML(node *tocNode, level int) {
 		//logf("genTocHTML: generating for %s '%s'\n", node.ID, s)
 		node.tocHTML = gen(nil)
 		node.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: node.tocHTML}}
-		for _, c := range node.Children {
-			c.tocHTML = gen(c)
-			c.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: c.tocHTML}}
-		}
+
+		// TODO: generates too much
+		// for _, c := range node.Children {
+		// 	c.tocHTML = gen(c)
+		// 	c.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: c.tocHTML}}
+		// }
+
 	}
 	buildToc()
 
