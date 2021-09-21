@@ -314,7 +314,7 @@ import re
 * Use `r'\1'` or `'\\1'` for backreference.
 * Use `'?'` to make an operator non-greedy.
 
-#### Match Object
+**Match Object**
 
 ```python
 <str>   = <Match>.group()   # Whole match.
@@ -324,7 +324,7 @@ import re
 <int>   = <Match>.end()     # Exclusive end index of a match.
 ```
 
-#### Special Sequences
+**Special Sequences**
 
 Expressions below hold true for strings that contain only ASCII characters. Use capital letters for negation.
 
@@ -543,14 +543,16 @@ from dateutil.tz import UTC, tzlocal, gettz
 ## Syntax
 ### Arguments
 
-#### Inside Function Call
+**Inside Function Call**
+
 ```python
 <function>(<positional_args>)                  # f(0, 0)
 <function>(<keyword_args>)                     # f(x=0, y=0)
 <function>(<positional_args>, <keyword_args>)  # f(0, y=0)
 ```
 
-#### Inside Function Definition
+**Inside Function Definition**
+
 ```python
 def f(<nondefault_args>):                      # def f(x, y)
 def f(<default_args>):                         # def f(x=0, y=0)
@@ -990,7 +992,8 @@ member_values   = [a.value for a in <enum>]
 random_member   = random.choice(list(<enum>))
 ```
 
-#### Inline
+**Inline**
+
 ```python
 Cutlery = Enum('Cutlery', ['fork', 'knife', 'spoon'])
 Cutlery = Enum('Cutlery', 'fork knife spoon')
@@ -1017,12 +1020,14 @@ while True:
         break
 ```
 
-#### Raising Exception
+**Raising Exception**
+
 ```python
 raise ValueError('A very specific message!')
 ```
 
-#### Finally
+**Finally**
+
 ```python
 >>> try:
 ...     raise KeyboardInterrupt
@@ -1044,7 +1049,8 @@ print(<el_1>, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
 
 * Use `'file=sys.stderr'` for errors.
 
-#### Pretty Print
+**Pretty Print**
+
 ```python
 >>> from pprint import pprint
 >>> pprint(dir())
@@ -1064,7 +1070,8 @@ print(<el_1>, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
 <str> = input(prompt=None)
 ```
 
-#### Prints lines until EOF:
+**Prints lines until EOF:**
+
 ```python
 while True:
     try:
@@ -1082,7 +1089,8 @@ script_name = sys.argv[0]
 arguments   = sys.argv[1:]
 ```
 
-#### Argparse
+**Argparse**
+
 ```python
 from argparse import ArgumentParser, FileType
 p = ArgumentParser(description=<str>)
@@ -1173,7 +1181,7 @@ from os import path, listdir
 ['1.gif', 'card.gif']
 ```
 
-#### Pathlib
+**Pathlib**
 
 ```python
 from pathlib import Path
@@ -1213,7 +1221,8 @@ import os
 <str> = os.popen(<command>).read()
 ```
 
-#### Subprocess
+**Subprocess**
+
 ```python
 >>> import subprocess, shlex
 >>> a = subprocess.run(shlex.split('ls -a'), stdout=subprocess.PIPE)
@@ -1224,21 +1233,22 @@ b'.\n..\nfile1.txt\nfile2.txt\n'
 ```
 
 ## Data
+
 ### CSV
 
 ```python
 import csv
 ```
 
-#### Read Rows from CSV File
-
+** Read Rows from CSV File**
 ```python
 def read_csv_file(filename):
     with open(filename, encoding='utf-8') as file:
         return csv.reader(file, delimiter=';')
 ```
 
-#### Write Rows to CSV File
+**Write Rows to CSV File**
+
 ```python
 def write_to_csv_file(filename, rows):
     with open(filename, 'w', encoding='utf-8') as file:
@@ -1255,7 +1265,7 @@ import json
 <object> = json.loads(<str>)
 ```
 
-#### Read Object from JSON File
+**Read Object from JSON File**
 
 ```python
 def read_json_file(filename):
@@ -1263,7 +1273,7 @@ def read_json_file(filename):
         return json.load(file)
 ```
 
-#### Write Object to JSON File
+**Write Object to JSON File**
 
 ```python
 def write_to_json_file(filename, an_object):
@@ -1279,14 +1289,16 @@ import pickle
 <object> = pickle.loads(<bytes>)
 ```
 
-#### Read Object from File
+**Read Object from File**
+
 ```python
 def read_pickle_file(filename):
     with open(filename, 'rb') as file:
         return pickle.load(file)
 ```
 
-#### Write Object to File
+**Write Object to File**
+
 ```python
 def write_to_pickle_file(filename, an_object):
     with open(filename, 'wb') as file:
@@ -1302,7 +1314,8 @@ db = sqlite3.connect('<path>')
 db.close()
 ```
 
-#### Read
+**Read**
+
 ```python
 cursor = db.execute('<query>')
 if cursor:
@@ -1310,7 +1323,8 @@ if cursor:
     <list>  = cursor.fetchall()  # Remaining rows.
 ```
 
-#### Write
+**Write**
+
 ```python
 db.execute('<query>')
 db.commit()
@@ -1368,7 +1382,8 @@ from struct import pack, unpack, iter_unpack, calcsize
 <tuples> = iter_unpack('<format>', <bytes>)
 ```
 
-#### Example
+**Example**
+
 ```python
 >>> pack('>hhl', 1, 2, 3)
 b'\x00\x01\x00\x02\x00\x00\x00\x03'
@@ -1378,7 +1393,7 @@ b'\x00\x01\x00\x02\x00\x00\x00\x03'
 8
 ```
 
-#### Format
+**Format**
 
 For standard sizes start format string with:
 
@@ -1441,7 +1456,7 @@ from collections import deque
 from threading import Thread, RLock
 ```
 
-#### Thread
+**Thread**
 
 ```python
 thread = Thread(target=<function>, args=(<first_arg>, ))
@@ -1450,7 +1465,8 @@ thread.start()
 thread.join()
 ```
 
-#### Lock
+**Lock**
+
 ```python
 lock = RLock()
 lock.acquire()
@@ -1468,7 +1484,7 @@ with lock:
 
 Inspecting code at runtime.
 
-#### Variables
+**Variables**
 
 ```python
 <list> = dir()      # Names of variables in current scope.
@@ -1476,7 +1492,7 @@ Inspecting code at runtime.
 <dict> = globals()  # Dict of global variables.
 ```
 
-#### Attributes
+**Attributes**
 
 ```python
 <dict> = vars(<object>)
@@ -1485,7 +1501,7 @@ value  = getattr(<object>, '<attr_name>')
 setattr(<object>, '<attr_name>', value)
 ```
 
-#### Parameters
+**Parameters**
 
 ```python
 from inspect import signature
@@ -1607,7 +1623,7 @@ last_el          = op.methodcaller('pop')(<list>)
 ValueError: malformed node or string
 ```
 
-#### Using Abstract Syntax Trees
+**Using Abstract Syntax Trees**
 
 ```python
 import ast
@@ -1723,7 +1739,8 @@ pyplot.show()
 
 ### Table
 
-#### Prints a CSV file as an ASCII table:
+**Prints a CSV file as an ASCII table:**
+
 ```python
 # $ pip3 install tabulate
 from tabulate import tabulate
@@ -1773,7 +1790,8 @@ logger.<level>('A logging message.')
 ```
 * Levels: `'debug'`, `'info'`, `'success'`, `'warning'`, `'error'`, `'critical'`.
 
-#### Exceptions
+**Exceptions**
+
 Error description, stack trace and values of variables are appended automatically.
 
 ```python
@@ -1783,7 +1801,7 @@ except <Exception>:
     logger.exception('An error happened.')
 ```
 
-#### Rotation
+**Rotation**
 
 Parameter that sets a condition when a new log file is created.
 
@@ -1795,7 +1813,8 @@ rotation=<int>|<datetime.timedelta>|<datetime.time>|<str>
 * `'<time>'` - Time of day.
 * `'<str>'` - Any of above as a string: `'100 MB'`, `'1 month'`, `'monday at 12:00'`, ...
 
-#### Retention
+**Retention**
+
 Sets a condition which old log files are deleted.
 ```python
 retention=<int>|<datetime.timedelta>|<str>
@@ -1821,7 +1840,7 @@ retention=<int>|<datetime.timedelta>|<str>
 ('https://www.python.org/', '3.7.2')
 ```
 
-#### Selenium
+**Selenium**
 
 Library for scraping dynamically generated web content.
 
@@ -1844,27 +1863,31 @@ from bottle import run, route, post, template, request, response
 import json
 ```
 
-#### Run
+**Run**
+
 ```python
 run(host='localhost', port=8080)
 run(host='0.0.0.0', port=80, server='cherrypy')
 ```
 
-#### Static Request
+**Static Request**
+
 ```python
 @route('/img/<image>')
 def send_image(image):
     return static_file(image, 'images/', mimetype='image/png')
 ```
 
-#### Dynamic Request
+**Dynamic Request**
+
 ```python
 @route('/<sport>')
 def send_page(sport):
     return template('<h1>{{title}}</h1>', title=sport)
 ```
 
-#### REST Request
+**REST Request**
+
 ```python
 @post('/odds/<sport>')
 def odds_handler(sport):
@@ -2058,7 +2081,8 @@ For each point returns index of its nearest point (`[0.1, 0.6, 0.8] => [1, 2, 1]
 from PIL import Image
 ```
 
-#### Create a PNG image of a rainbow gradient:
+**Create a PNG image of a rainbow gradient:**
+
 ```python
 width  = 100
 height = 100
@@ -2070,7 +2094,7 @@ img.putdata([(int(a), 255, 255) for a in pixels])
 img.convert(mode='RGB').save('test.png')
 ```
 
-#### Add noise to a PNG image:
+**Add noise to a PNG image:**
 
 ```python
 from random import randint
@@ -2095,7 +2119,7 @@ import wave
 from struct import pack, iter_unpack
 ```
 
-#### Read Frames from WAV File
+**Read Frames from WAV File**
 
 ```python
 def read_wav_file(filename):
@@ -2104,7 +2128,7 @@ def read_wav_file(filename):
         return [a[0] for a in iter_unpack('<h', frames)]
 ```
 
-#### Write Frames to WAV File
+**Write Frames to WAV File**
 
 ```python
 def write_to_wav_file(filename, frames_int, mono=True):
@@ -2116,7 +2140,8 @@ def write_to_wav_file(filename, frames_int, mono=True):
         wf.writeframes(b''.join(frames_short))
 ```
 
-#### Save a sine wave to a mono WAV file:
+**Save a sine wave to a mono WAV file:**
+
 ```python
 from math import pi, sin
 frames_f = (sin(i * 2 * pi * 440 / 44100) for i in range(100000))
@@ -2124,7 +2149,7 @@ frames_i = (int(a * 30000) for a in frames_f)
 write_to_wav_file('test.wav', frames_i)
 ```
 
-#### Add noise to a mono WAV file:
+**Add noise to a mono WAV file:**
 
 ```python
 from random import randint
@@ -2133,7 +2158,7 @@ frames_i  = (add_noise(a) for a in read_wav_file('test.wav'))
 write_to_wav_file('test.wav', frames_i)
 ```
 
-#### Play Popcorn:
+**Play Popcorn:**
 
 ```python
 # $ pip3 install simpleaudio
