@@ -20,7 +20,7 @@ This uses whatever system font is available. See: [System shock - Designing Medi
 ### Explanation
 
 | Font                 | OS                      |
-| ----                 | --                      |
+| ---                  | ---                     |
 | `-apple-system`      | OS X (10.11+), iOS (9+) |
 | `BlinkMacSystemFont` | OS X, Chrome            |
 | `Segoe UI`           | Windows                 |
