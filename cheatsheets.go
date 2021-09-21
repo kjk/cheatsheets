@@ -318,17 +318,29 @@ func genHeadingTocHTML(node *tocNode, level int) {
 			return
 		}
 
-		s := `<div class="toc-mini">`
-		for i, c := range node.Children {
-			s += fmt.Sprintf(`<a href="#%s">%s</a>`, c.ID, c.Content)
-			if i < nChildren-1 {
-				s += `<span class="tmb">&bull;</span>`
+		gen := func(active *tocNode) []byte {
+			s := `<div class="toc-mini">`
+			for i, c := range node.Children {
+				if c == active {
+					s += fmt.Sprintf(`<b>%s</b>`, c.Content)
+				} else {
+					s += fmt.Sprintf(`<a href="#%s">%s</a>`, c.ID, c.Content)
+				}
+				if i < nChildren-1 {
+					s += `<span class="tmb">&bull;</span>`
+				}
 			}
+			s += `</div>`
+			return []byte(s)
 		}
-		s += `</div>`
+
 		//logf("genTocHTML: generating for %s '%s'\n", node.ID, s)
-		node.tocHTML = []byte(s)
-		node.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: []byte(s)}}
+		node.tocHTML = gen(nil)
+		node.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: node.tocHTML}}
+		for _, c := range node.Children {
+			c.tocHTML = gen(c)
+			c.tocHTMLBlock = &ast.HTMLBlock{Leaf: ast.Leaf{Literal: c.tocHTML}}
+		}
 	}
 	buildToc()
 
