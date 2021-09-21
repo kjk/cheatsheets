@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>cheatsheets</title>
+    <link href="s/cheatsheet.css" rel="stylesheet" />
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="s/cheatsheet.js"></script>
+    <script>
+        function doSearch(s) {
+            s = s.toLowerCase();
+            const els = document.getElementsByClassName("index-toc-item");
+            for (const el of els) {
+                const v = el.getElementsByTagName("a");
+                if (len(v) != 1) {
+                    continue;
+                }
+                const a = v[0];
+                const txt = a.textContent.toLowerCase();
+                let show = !s || s === "" || txt.includes(s);
+                // hide / show the div containing this <a> element
+                el.style.display = show ? "block" : "none";
+                //el.style.visibility = show ? "visible" : "collapse";
+            }
+            return s;
+        }
+
+        function showRandomCheatsheetA() {
+            const els = document.getElementsByClassName("index-toc-item");
+            const idx = getRandomInt(len(els));
+            const el = document.getElementById("random-cs");
+            el.appendChild(els[idx].cloneNode(true));
+        }
+
+        async function start() {
+            document.addEventListener('keydown', (event) => {
+                if (event.key == '/') {
+                    focusSearch();
+                    event.preventDefault();
+                }
+            });
+            showRandomCheatsheetA();
+            focusSearch();
+        }
+    </script>
+    <style>
+        body {
+            font-size: 11pt;
+        }
+
+        .topnav {
+            margin: 0.5em 0;
+            padding: 0 4px;
+            padding-bottom: 1em;
+        }
+
+        #cs-search-input {
+            width: 32em;
+        }
+    </style>
+</head>
+
+<body onload="start()">
+    <div class="flex flex-row align-center justify-center topnav">
+        <div x-data="{ search: '' }" x-init="$watch('search', val => { doSearch(val);})" class="flex flex-row align-center">
+            <input x-model="search" @keyup.escape="search=''" id="cs-search-input" placeholder="'/' to search {{CheatsheetsCount}} cheatsheets" type="text">
+        </div>
+    </div>
+
+    <div class="index-toc">
+        {{#each cheatsheets}}
+            <div class="index-toc-item with-bull"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
+        {{/each}}
+    </div>
+
+    <div class="index-toc" id="random-cs" style="margin-top: 1em">
+        Random node:&nbsp;
+    </div>
+
+    <div class="by-topic">
+        <center>By topic:</center>
+    </div>
+
+    {{#each categories}}
+        <div class="index-toc">
+            <div> <b>{{category}}</b>:&nbsp;</div>
+            {{#each cheatsheets}}
+                <div class="with-bull"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
+            {{/each}}
+        </div>
+    {{/each}}
+
+</body>
+
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>{{title}} cheatsheet</title>
+    <link href="/s/cheatsheet.css" rel="stylesheet" />
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="/s/cheatsheet.js"></script>
+    <script>
+        // [[text, text.toLowerCase(), id], ...]
+        //let searchIndex = [];
+
+        let searchIndexJSON = `{{{searchIndexStatic}}}`;
+        let searchIndex = [];
+
+        function isHdrEl(el) {
+            return el && ["h1", "h2", "h3", "h4"].includes(el.localName);
+        }
+
+        function isSiblingHeader(el) {
+            const nextEl = el.nextElementSibling;
+            return !nextEl || isHdrEl(nextEl);
+        }
+
+        function updateLocationHash(divId) {
+            if (divId[0] == '#') {
+                divId = divId.substr(1);
+            }
+            divId = divId.replace("-wrap", "");
+            //console.log("updateLocationHash:", divId);
+            history.pushState({}, "", location.pathname + "?" + divId)
+        }
+
+        function bringToFrontDiv(hdrId) {
+            const divId = hdrId + "-wrap";
+            let el = elById(divId);
+            if (!el) {
+                return;
+            }
+
+            // remove "first" class from the element that currently has it
+            let els = document.getElementsByClassName("first");
+            for (let el of els) {
+                el.classList.remove("first");
+            }
+
+            el.classList.add("first");
+            const startEl = elById("#start");
+            el.remove();
+            startEl.after(el);
+
+            el = elById(hdrId)
+            el.classList.add("flash");
+            updateLocationHash(divId);
+        }
+
+        function onDataLinkClick(ev) {
+            ev.preventDefault();
+            const hdrId = ev.target.getAttribute("data-link");
+            bringToFrontDiv(hdrId);
+            window.scrollTo(0, 0);
+        }
+
+        function onLinkClick(ev) {
+            ev.preventDefault();
+            const hdrId = ev.target.getAttribute("href");
+            bringToFrontDiv(hdrId);
+            window.scrollTo(0, 0);
+        }
+
+        function searchItemClicked(search, result) {
+            const id = result[2];
+            console.log(`search item clicked: '${id}'`)
+            //ev.preventDefault();
+            bringToFrontDiv(id);
+            window.scrollTo(0, 0);
+            search.show = false;
+            search.results = [];
+        }
+
+        function hookClick() {
+            let els = document.getElementsByTagName("a");
+            for (let el of els) {
+                const href = el.getAttribute("href");
+                if (!href) {
+                    continue;
+                }
+                if (href[0] == "#") {
+                    el.onclick = onLinkClick;
+                } else if (href.startsWith("http")) {
+                    // make all external links open in new tab
+                    el.setAttribute("target", "_blank");
+                }
+            }
+
+            els = document.querySelectorAll("[data-link]");
+            //console.log("hookClikc: els:", els);
+            for (let el of els) {
+                const id = el.getAttribute("data-link");
+                if (!id) {
+                    console.log("missing id");
+                    continue;
+                }
+                el.onclick = onDataLinkClick;
+            }
+        }
+
+        // for nested headers we want the name be "File manipulation / Reading"
+        // instead of just "Reading".
+        function buildHeaderFullNames() {
+            let currH1 = "";
+            let currH2 = "";
+            let currH3 = "";
+            const parent = elById("#content");
+
+            function a(s, id) {
+                //console.log(s, id);
+                return `<a href="#${id}" onclick="onLinkClick(even)">${s}</a>`;
+            }
+
+            function appendBreadcrumb(s1, s2) {
+                if (!s1) {
+                    return s2;
+                }
+                return s1 + " / " + s2;
+            }
+
+            for (const el of parent.children) {
+                if (!isHdrEl(el)) {
+                    continue;
+                }
+                /*
+                if (!isSiblingHeader(el)) {
+                  //console.log(`skipping ${el.textContent}`);
+                  const txt = el.textContent;
+                  const id = el.id;
+                  searchIndex.push([txt, txt.toLowerCase(), id]);
+                }
+                */
+
+                const tag = el.localName;
+                if (tag == "h1") {
+                    currH1 = a(el.textContent, el.id);
+                    continue;
+                }
+                if (tag === "h2") {
+                    currH2 = appendBreadcrumb(currH1, a(el.textContent, el.id));
+                    el.innerHTML = currH2;
+                    continue;
+                }
+                if (tag === "h3") {
+                    currH3 = appendBreadcrumb(currH2, a(el.textContent, el.id));
+                    el.innerHTML = currH3;
+                    continue;
+                }
+                if (tag === "h4") {
+                    const currH4 = appendBreadcrumb(currH3, a(el.textContent, el.id));
+                    el.innerHTML = currH4;
+                    continue;
+                }
+            }
+        }
+
+        // for every h2 in #content, wraps it and it's siblings (until next h2)
+        // inside div and appends that div to #start
+        function groupHeaderElements() {
+            const parent = elById("#content");
+            const groups = [];
+            let curr = [];
+            for (const el of parent.children) {
+                if (isHdrEl(el)) {
+                    if (curr.length > 0) {
+                        groups.push(curr);
+                    }
+                    curr = [el];
+                } else {
+                    curr.push(el);
+                }
+            }
+            if (curr.length > 0) {
+                groups.push(curr);
+            }
+
+            for (const group of groups) {
+                const div = document.createElement("div");
+                div.id = group[0].id + "-wrap";
+                div.className = "dvwrap box";
+
+                for (const el of group) {
+                    div.appendChild(el);
+                }
+
+                const parent = elById("#wrapped-content");
+                parent.appendChild(div);
+            }
+        }
+
+        async function start() {
+            //console.log("start");
+            // must call before groupHeaderElements()
+            //console.log(searchIndexJSON);
+            searchIndex = JSON.parse(searchIndexJSON);
+            //console.log(searchIndex);
+            buildHeaderFullNames();
+
+            groupHeaderElements();
+            hookClick();
+
+            function showIntro(a) {
+                for (const id of a) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        bringToFrontDiv(id);
+                        return;
+                    }
+                }
+            }
+
+            let ids = [];
+            // try to focus "foo" from "?foo"
+            let id = window.location.search;
+            if (id[0] === '?') {
+                id = id.substr(1);
+                ids.push(id);
+            }
+            ids.push("introduction", "intro", "basics");
+            showIntro(ids);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key == '/') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const el = document.getElementById("cs-search-input");
+                    el.value = "";
+                    el.focus();
+                }
+            });
+        }
+
+        function searchFocused(search) {
+            //console.log("showing everything");
+            let results = [];
+            for (const el of searchIndex) {
+                const a = [el[0],
+                    [], el[2], el[3]
+                ];
+                results.push(a);
+            }
+            search.results = results;
+            search.selectedIdx = 0;
+            search.show = true;
+        }
+
+        function doSearch(search) {
+            //console.log("search:", search);
+            let term = search.term.toLowerCase();
+            let results = [];
+            for (const el of searchIndex) {
+                const idx = el[1].indexOf(term);
+                if (idx !== -1) {
+                    const a = [el[0],
+                        [
+                            [idx, len(term)]
+                        ], el[2], el[3]
+                    ];
+                    results.push(a);
+                }
+            }
+            search.results = results;
+            search.selectedIdx = 0;
+            search.show = len(term) > 0;
+            //console.log("doSearch: results:", results, `len: ${search.results.length}`);
+        }
+
+        function searchKeyDown(search, ev) {
+            //console.log("searchKeyDown:", search);
+            let idx = search.selectedIdx;
+            const results = search.results;
+            if (isEnter(ev)) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                //console.log(`searchKeyDown: idx: ${idx}`);
+                if (idx >= 0 && idx < len(results)) {
+                    const el = results[idx];
+                    const id = el[2];
+                    //console.log(`searchKeyDown: id: ${id}`);
+                    bringToFrontDiv(id);
+                    search.term = "";
+                    search.result = [];
+                    search.selectedIdx = -1;
+                    search.show = false;
+                }
+                return;
+            }
+            const n = dir(ev);
+            if (n === 0) {
+                return;
+            }
+            ev.stopPropagation();
+            ev.preventDefault();
+            idx += n;
+            if (idx < 0) {
+                idx = 0;
+            }
+            const lastIdx = results.length - 1;
+            if (idx > lastIdx) {
+                idx = lastIdx;
+            }
+            search.selectedIdx = idx;
+        }
+
+        function cancelSearch(search) {
+            //console.log("cancelSearch", search);
+            const el = document.getElementById("cs-search-input");
+            el.value = "";
+            el.blur();
+            //search.term = '';
+            search.results = [];
+            search.selectedIdx = -1;
+            search.show = false;
+        }
+
+        function ensureVisible(el, visible) {
+            //console.log(el, visible);
+            if (visible) {
+                el.scrollIntoView(false);
+            }
+        }
+
+        function emptyResults(search) {
+            const empty = len(search.results) == 0;
+            //console.log("emptyResults:", empty);
+            return empty;
+        }
+
+        function noResults(search) {
+            return `no results for '${search.term}'`;
+        }
+
+        function clsSearchItem(si, isSelected) {
+            const lvl = si[3];
+            let cls = `si sil${lvl}`;
+            if (isSelected) {
+                cls += " selected";
+            }
+            return cls;
+        }
+    </script>
+    <style>
+        h1 {
+            font-size: 1.7em;
+        }
+
+        .topnav {
+            margin: 0.5em 0;
+            padding: 0 4px;
+        }
+
+        .search-results-wrap {
+            z-index: 19;
+            /* bigger than toc */
+            top: 2rem;
+
+            width: 74vw;
+            left: 13vw;
+            right: 13vw;
+
+            font-size: 90%;
+            min-height: 4rem;
+            position: fixed;
+        }
+
+        .results {
+            max-height: 40vh;
+            padding: 4px 8px;
+            line-height: 1.3em;
+            /* cursor: pointer; */
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* search item */
+        .si {
+            padding-right: 0.5rem;
+        }
+
+        /* search item level 1 */
+        .sil0 {
+            padding-left: 0.5rem;
+        }
+
+        .sil1 {
+            padding-left: 1rem;
+        }
+
+        .sil2 {
+            padding-left: 1.5rem;
+        }
+
+        .sil3 {
+            padding-left: 2rem;
+        }
+
+        .sil4 {
+            padding-left: 2.5rem;
+        }
+
+        .sil5 {
+            padding-left: 3rem;
+        }
+
+        .si:hover {
+            background-color: #fafafa;
+            cursor: pointer;
+        }
+
+        .help {
+            color: #717274;
+            background-color: #f9f9f9;
+            padding: 8px 8px;
+            font-size: 0.7em;
+            padding-left: 10px;
+        }
+
+        .no-results {
+            padding-top: 48px;
+            padding-bottom: 48px;
+            margin-left: auto;
+            margin-right: auto;
+            /* background-color: #dddddd; */
+            text-align: center;
+        }
+
+        .selected {
+            background-color: #f4f4f4;
+        }
+
+        .toc2 {
+            font-size: 11pt;
+            position: sticky;
+            top: 0;
+            z-index: 9;
+            line-height: 1.3em;
+        }
+
+        .cols {
+            column-count: auto;
+            /* column-width: 150px; */
+            column-width: 9rem;
+        }
+
+        .toc2-h {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #880000;
+            font-weight: bold;
+            background-color: lightyellow !important;
+        }
+
+        .toc2-h:hover {
+            background-color: yellow !important;
+            cursor: pointer;
+        }
+
+        .toc2-l {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: blue;
+        }
+
+        .toc2-l:hover {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        .bgcol1 {
+            /* background-color: #f9f9f9; */
+            /* border-bottom: 1px solid #f0f0f0; */
+        }
+
+        .bgcol2 {
+            /* background-color: white; */
+        }
+    </style>
+</head>
+
+<body onload="start()">
+    <div class="flex flex-row align-center topnav">
+        <a href="/index.html">Cheatsheets</a>
+        <div>&nbsp;/&nbsp;{{title}} cheatsheet</div>
+        <div class="flex-grow"></div>
+        <div x-cloak class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
+      term: '',
+      results: [],
+      selectedIdx: -1,
+      show: false
+     } }" x-init="$watch('search.term', val => { doSearch(search) })">
+            <input x-model="search.term" x-on:focus="searchFocused(search)" @keyup.escape="cancelSearch(search)" id="cs-search-input" type="text" placeholder="'/' to search" class="relative" style="width: 32em;">
+            <div x-show="search.show" class="overlay" x-on:click="cancelSearch(search)">
+                <div class="box p-0 bg-white search-results-wrap">
+                    <div class="results">
+
+                        <template x-if="emptyResults(search)">
+                            <div class="no-results" x-text="noResults(search)"></div>
+                        </template>
+
+                        <template x-for="(result, index) in search.results" :key="result[2]">
+                            <div class="si" :class="clsSearchItem(result, index == search.selectedIdx)" x-on:click.prevent="searchItemClicked(search, result)" x-html="hilightSearchResult(result[0], result[1])" x-effect="ensureVisible($el, index == search.selectedIdx)"></div>
+                        </template>
+                    </div>
+                    <div class="help">
+                        &uarr; &darr; to navigate &nbsp;&nbsp;&nbsp; &crarr; to select
+                        &nbsp;&nbsp;&nbsp; Esc to close
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-grow"></div>
+        <a style="font-size: 10pt" href="https://github.com/kjk/cheatsheets/edit/master/{{mdFileName}}">suggest
+            edit</a>
+    </div>
+
+    <div class="toc2 cols box">
+        {{#each toc}}
+            {{#if children}}
+                <div class="toc2-h {{class}}" data-link="{{ID}}">{{content}}</div>
+                {{#each children}}
+                    <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
+                {{/each}}
+            {{else}}
+                <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
+            {{/if}}
+        {{/each}}
+    </div>
+
+    <div id="start"></div>
+    <div id="wrapped-content"></div>
+
+    <div id="content">
+
+        {{{content}}}
+
+    </div>
+</body>
+
+</html>

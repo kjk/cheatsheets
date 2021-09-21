@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,8 +14,9 @@ import (
 type URLContent interface {
 	// returns true if this URLContent matches url
 	Matches(url string) bool
-	// if Matches returns true, Get() returns the content of the file
-	Get([]byte, error)
+	// if Matches returns true call Send() to send the output
+	// this allows doing things like redirects
+	Send(w http.ResponseWriter, r *http.Request) error
 }
 
 type FileOnDisk struct {
@@ -36,8 +36,10 @@ func (f *FileOnDisk) Matches(url string) bool {
 	return false
 }
 
-func (f *FileOnDisk) Get() ([]byte, error) {
-	return os.ReadFile(f.Path)
+func (f *FileOnDisk) Send(w http.ResponseWriter, r *http.Request) error {
+	panicIf(!fileExists(f.Path), "file '%s' doesn't exist")
+	http.ServeFile(w, r, f.Path)
+	return nil
 }
 
 func NewFileOnDisk(path string, url string, urls ...string) *FileOnDisk {
@@ -51,23 +53,35 @@ func NewFileOnDisk(path string, url string, urls ...string) *FileOnDisk {
 	return res
 }
 
+type DynamicContent struct {
+	matches func(string) bool
+	send    func(http.ResponseWriter, *http.Request) error
+}
+
+func (f *DynamicContent) Matches(uri string) bool {
+	return f.matches(uri)
+}
+
+func (f *DynamicContent) Send(w http.ResponseWriter, r *http.Request) error {
+	return f.send(w, r)
+}
+
+func NewDynamicContent(matches func(string) bool, send func(w http.ResponseWriter, r *http.Request) error) *DynamicContent {
+	return &DynamicContent{
+		matches: matches,
+		send:    send,
+	}
+}
+
 // ServerFiles represents all files known to the server
 type ServerFiles struct {
-	files []URLContent
-}
-
-func httpServeText(w http.ResponseWriter, r *http.Request, s string) {
-	content := bytes.NewReader([]byte(s))
-	http.ServeContent(w, r, "foo.txt", time.Time{}, content)
-}
-
-func handleFile(w http.ResponseWriter, r *http.Request, files *ServerFiles) {
-	httpServeText(w, r, "this is a simple text reponse")
+	Files []URLContent
 }
 
 // returns function that will wait for SIGTERM signal (e.g. Ctrl-C) and
 // shutdown the server
 func StartServer(files *ServerFiles) func() {
+	panicIf(files == nil, "must provide files")
 	httpPort := 8080
 	httpAddr := fmt.Sprintf(":%d", httpPort)
 	if isWindows() {
@@ -75,7 +89,16 @@ func StartServer(files *ServerFiles) func() {
 	}
 	mux := &http.ServeMux{}
 	handleAll := func(w http.ResponseWriter, r *http.Request) {
-		handleFile(w, r, files)
+		uri := r.URL.Path
+		for _, f := range files.Files {
+			if f.Matches(uri) {
+				logf(ctx(), "handleFile: found match for '%s'\n", r.URL)
+				f.Send(w, r)
+				return
+			}
+		}
+		logf(ctx(), "handleFile: no match for '%s'\n", r.URL)
+		http.NotFound(w, r)
 	}
 	mux.HandleFunc("/", handleAll)
 	var handler http.Handler = mux

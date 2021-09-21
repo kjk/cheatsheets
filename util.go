@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -65,4 +66,33 @@ func openBrowser(url string) {
 func fileExists(path string) bool {
 	st, err := os.Lstat(path)
 	return err == nil && st.Mode().IsRegular()
+}
+
+func readFileMust(path string) []byte {
+	d, err := ioutil.ReadFile(path)
+	must(err)
+	return d
+}
+
+func normalizeNewlinesInPlace(d []byte) []byte {
+	wi := 0
+	n := len(d)
+	for i := 0; i < n; i++ {
+		c := d[i]
+		// 13 is CR
+		if c != 13 {
+			d[wi] = c
+			wi++
+			continue
+		}
+		// replace CR (mac / win) with LF (unix)
+		d[wi] = 10
+		wi++
+		if i < n-1 && d[i+1] == 10 {
+			// this was CRLF, so skip the LF
+			i++
+		}
+
+	}
+	return d[:wi]
 }
