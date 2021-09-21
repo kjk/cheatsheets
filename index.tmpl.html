@@ -167,15 +167,25 @@
             font-size: 11pt;
         }
 
-        .topnav {
-            margin: 0.5em 0;
-            padding: 0 4px;
-            padding-bottom: 1em;
-        }
-
         #cs-search-input {
             width: 32em;
         }
+        td {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 4px;
+            padding-top: 4px;
+        }
+        .trim {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: blue;
+        }
+        .trim:hover {
+            background-color: lightblue;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 
@@ -210,13 +220,13 @@
     </div>
     </div>
 
-    <div class="index-toc">
+    <div class="mono cols mt-4">
         {{#each cheatsheets}}
-            <div class="index-toc-item with-bull"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
+            <div class="index-toc-item overflow-ellipsis"><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
         {{/each}}
     </div>
 
-    <div class="index-toc" id="random-cs" style="margin-top: 1em">
+    <div class="mono mt-4" id="random-cs">
         Random node:&nbsp;
     </div>
 
@@ -227,11 +237,13 @@
     <table>
         {{#categories}}
             <tr>
-                <td><b style="white-space: nowrap;">{{category}}</b></td>
-                <td style="width:100%">
-                    <div class="index-toc">
+                <td valign="top"><b style="white-space: nowrap;">{{category}}</b></td>
+                <td valign="top" style="width:100%">
+                    <div class="cols">
                         {{#cheatsheets}}
-                            <div><a href="/cheatsheet/{{PathHTML}}">{{Title}}</a></div>
+                        <div class="overflow-ellipsis">
+                            <a href="/cheatsheet/{{PathHTML}}">{{Title}}</a>
+                        </div>
                         {{/cheatsheets}}
                     </div>
                 </td>
