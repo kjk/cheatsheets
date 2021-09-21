@@ -135,12 +135,12 @@ func StartServer(files *ServerFiles) func() {
 		}
 		for _, f := range files.Files {
 			if f.Matches(uri) {
-				logf(ctx(), "handleFile: found match for '%s'\n", r.URL)
+				logf(ctx(), "handleFile: found match for '%s'\n", uri)
 				f.Send(w, r)
 				return
 			}
 		}
-		logf(ctx(), "handleFile: no match for '%s'\n", r.URL)
+		logf(ctx(), "handleFile: no match for '%s'\n", uri)
 		http.NotFound(w, r)
 	}
 	mux.HandleFunc("/", handleAll)

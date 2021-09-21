@@ -1,5 +1,5 @@
 ---
-title: Command line stuff
+title: Unix commands
 ---
 
 ## List (ls)

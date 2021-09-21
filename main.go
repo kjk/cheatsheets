@@ -71,6 +71,9 @@ func buildContentCheatsheets() []URLContent {
 	csIndexSend := func(w http.ResponseWriter, r *http.Request) error {
 		logf(ctx(), "csIndexSend: '%s'\n", r.URL)
 		uri := r.URL.Path
+		if uri == "/" {
+			uri = "/index.html"
+		}
 		panicIf(!csIndexMatches(uri), "no match for '%s'", uri)
 		html := genIndexHTML(cheatsheets)
 		content := bytes.NewReader([]byte(html))
