@@ -147,18 +147,18 @@
                     continue;
                 }
                 if (tag === "h2") {
+                    el.innerHTML = appendBreadcrumb(currH1, el.textContent);
                     currH2 = appendBreadcrumb(currH1, a(el.textContent, el.id));
-                    el.innerHTML = currH2;
                     continue;
                 }
                 if (tag === "h3") {
+                    el.innerHTML = appendBreadcrumb(currH2, el.textContent);
                     currH3 = appendBreadcrumb(currH2, a(el.textContent, el.id));
-                    el.innerHTML = currH3;
                     continue;
                 }
                 if (tag === "h4") {
+                    el.innerHTML = appendBreadcrumb(currH3, el.textContent);
                     const currH4 = appendBreadcrumb(currH3, a(el.textContent, el.id));
-                    el.innerHTML = currH4;
                     continue;
                 }
             }

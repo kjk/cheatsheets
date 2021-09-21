@@ -198,7 +198,7 @@
         results: [],
         selectedIdx: -1,
         show: false
-        } }" x-init="$watch('search.term', val => { doSearch(search);})">
+        } }" x-cloak x-init="$watch('search.term', val => { doSearch(search);})">
             <input x-model="search.term" x-on:focus="searchFocused(search)" @keyup.escape="cancelSearch(search)" id="cs-search-input" type="text" placeholder="'/' to search" class="relative" style="width: 32em;">
             <div x-show="search.show" class="overlay" x-on:click="cancelSearch(search)">
                 <div class="box p-0 bg-white search-results-wrap">
