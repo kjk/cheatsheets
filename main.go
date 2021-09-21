@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -127,14 +128,24 @@ func generateStatic() {
 	WriteServerFilesToDir("www_generated", sf.Files)
 }
 
+func deployToRender() {
+	deployURL := os.Getenv("CHEATSHEETS_DEPLOY_HOOK")
+	panicIf(deployURL == "", "need env variable CHEATSHEETS_DEPLOY_HOOK")
+	d, err := httpGet(deployURL)
+	must(err)
+	logf(ctx(), "deployed to render.com:\n%s\n", string(d))
+}
+
 func main() {
 	var (
 		flgRunServer bool
 		flgGen       bool
+		flgDeploy    bool
 	)
 	{
 		flag.BoolVar(&flgRunServer, "run", false, "run dev server")
 		flag.BoolVar(&flgGen, "gen", false, "generate static files in www_generated dir")
+		flag.BoolVar(&flgDeploy, "deploy", false, "deploy to render.com")
 		flag.Parse()
 	}
 	if flgRunServer {
@@ -143,6 +154,10 @@ func main() {
 	}
 	if flgGen {
 		generateStatic()
+		return
+	}
+	if flgDeploy {
+		deployToRender()
 		return
 	}
 
