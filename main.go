@@ -47,15 +47,26 @@ func buildContentCheatsheets() []URLContent {
 		http.ServeContent(w, r, "foo.html", time.Time{}, content)
 		return nil
 	}
+	csContent := func() []*Content {
+		var res []*Content
+		for _, cs := range cheatsheets {
+			uri := "/cheatsheet/" + cs.fileNameBase + ".html"
+			d := genCheatsheetHTML(cs)
+			res = append(res, &Content{
+				URL:     uri,
+				Content: d,
+			})
+		}
+		return res
+	}
 
 	csIndexMatches := func(uri string) bool {
-		matches := uri == "/" || uri == "/index.html"
+		matches := uri == "/index.html"
 		if matches {
 			logf(ctx(), "csIndexMatches: match for '%s'\n", uri)
 		}
 		return matches
 	}
-
 	csIndexSend := func(w http.ResponseWriter, r *http.Request) error {
 		logf(ctx(), "csIndexSend: '%s'\n", r.URL)
 		uri := r.URL.Path
@@ -65,12 +76,21 @@ func buildContentCheatsheets() []URLContent {
 		http.ServeContent(w, r, "foo.html", time.Time{}, content)
 		return nil
 	}
-	csIndexDynamic := NewDynamicContent(csIndexMatches, csIndexSend)
-	csDynamic := NewDynamicContent(csMatches, csSend)
+	csIndexContent := func() []*Content {
+		var res []*Content
+		d := genIndexHTML(cheatsheets)
+		res = append(res, &Content{
+			URL:     "/index.html",
+			Content: []byte(d),
+		})
+		return res
+	}
+	csIndexDynamic := NewDynamicContent(csIndexMatches, csIndexSend, csIndexContent)
+	csDynamic := NewDynamicContent(csMatches, csSend, csContent)
 	return []URLContent{csIndexDynamic, csDynamic}
 }
 
-func runServer() {
+func buildServerFiles() *ServerFiles {
 	staticFiles := []string{
 		"/s/cheatsheet.css",
 		"cheatsheet.css",
@@ -88,24 +108,43 @@ func runServer() {
 	cheatsheets := buildContentCheatsheets()
 	files = append(files, cheatsheets...)
 
-	serverFiles := &ServerFiles{
+	return &ServerFiles{
 		Files: files,
 	}
-	waitFn := StartServer(serverFiles)
+}
+
+func runServer() {
+	waitFn := StartServer(buildServerFiles())
 	waitFn()
+}
+
+func generateStatic() {
+	timeStart := time.Now()
+	defer func() {
+		logf(ctx(), "generateStatic() finished in %s\n", formatDuration(time.Since(timeStart)))
+	}()
+	sf := buildServerFiles()
+	WriteServerFilesToDir("www_generated", sf.Files)
 }
 
 func main() {
 	var (
 		flgRunServer bool
+		flgGen       bool
 	)
 	{
-		flag.BoolVar(&flgRunServer, "run", false, "run me")
+		flag.BoolVar(&flgRunServer, "run", false, "run dev server")
+		flag.BoolVar(&flgGen, "gen", false, "generate static files in www_generated dir")
 		flag.Parse()
 	}
 	if flgRunServer {
 		runServer()
 		return
 	}
+	if flgGen {
+		generateStatic()
+		return
+	}
+
 	flag.Usage()
 }
