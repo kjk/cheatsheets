@@ -9,10 +9,8 @@
     <script src="{{alpineURL}}" defer></script>
     <script src="/s/cheatsheet.js"></script>
     <script>
-        // [[text, text.toLowerCase(), id], ...]
-        //let searchIndex = [];
-
         let searchIndexJSON = `{{{searchIndexStatic}}}`;
+        // [[text, text.toLowerCase(), id], ...]
         let searchIndex = [];
 
         function isHdrEl(el) {
@@ -240,6 +238,8 @@
                     el.focus();
                 }
             });
+            // this prevents temporary flashing since we change the html
+            document.body.removeAttribute("x-temp-cloak");
         }
 
         function searchFocused(search) {
@@ -417,7 +417,7 @@
     </style>
 </head>
 
-<body onload="start()">
+<body onload="start()" x-temp-cloak>
     <div class="flex flex-row align-center topnav">
         <a href="/">Cheatsheets</a>
         <div>&nbsp;/&nbsp;{{title}} cheatsheet</div>

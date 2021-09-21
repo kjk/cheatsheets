@@ -310,7 +310,7 @@ type tocNode struct {
 	seen         bool
 }
 
-func genTocHTML(node *tocNode, level int) {
+func genHeadingTocHTML(node *tocNode, level int) {
 	nChildren := len(node.Children)
 	buildToc := func() {
 		shouldBuild := ((level >= 2) || (node.SiblingsCount == 0))
@@ -333,7 +333,7 @@ func genTocHTML(node *tocNode, level int) {
 	buildToc()
 
 	for _, c := range node.Children {
-		genTocHTML(c, level+1)
+		genHeadingTocHTML(c, level+1)
 	}
 }
 
@@ -354,7 +354,7 @@ func findTocNodeForHeading(toc []*tocNode, h *ast.Heading) *tocNode {
 func insertAutoToc(doc ast.Node, toc []*tocNode) {
 
 	for _, n := range toc {
-		genTocHTML(n, 1)
+		genHeadingTocHTML(n, 1)
 	}
 
 	// doc is ast.Document, all ast.Heading are direct childre

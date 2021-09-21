@@ -17,6 +17,10 @@ body {
     display: none !important;
 }
 
+[x-temp-cloak] {
+    display: none !important;
+}
+
 table {
     border-spacing: 0;
 }
