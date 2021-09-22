@@ -103,6 +103,9 @@ func buildServerFiles() *ServerConfig {
 
 		"/s/cheatsheet.js",
 		"cheatsheet.js",
+
+		"/404.html",
+		"404.tmpl.html",
 	}
 	var files []URLContent
 	for i := 0; i < len(staticFiles); i += 2 {

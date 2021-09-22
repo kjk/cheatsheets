@@ -157,6 +157,33 @@ func StartServer(server *ServerConfig) func() {
 		if shouldRepeat && trySend(uri+".html") {
 			return
 		}
+		gen404Candidates := func(uri string) []string {
+			parts := strings.Split(uri, "/")
+			n := len(parts)
+			for n > 0 {
+				n = len(parts) - 1
+				if parts[n] != "" {
+					break
+				}
+				parts = parts[:n]
+			}
+			var res []string
+			for len(parts) > 0 {
+				s := strings.Join(parts, "/") + "/404.html"
+				res = append(res, s)
+				parts = parts[:len(parts)-1]
+			}
+			return res
+		}
+
+		// try 404.html
+		a := gen404Candidates(uri)
+		for _, uri404 := range a {
+			if trySend(uri404) {
+				logf(ctx(), "handleFile: sent 404 '%s' for '%s'\n", uri404, uri)
+				return
+			}
+		}
 		logf(ctx(), "handleFile: no match for '%s'\n", uri)
 		http.NotFound(w, r)
 	}
