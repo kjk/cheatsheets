@@ -45,6 +45,7 @@ func buildContentCheatsheets() []URLContent {
 		}
 		cs := csFindByURL(uri)
 		panicIf(cs == nil, "no match for '%s'", uri)
+		processCheatSheet(cs)
 		html := genCheatsheetHTML(cs)
 		content := bytes.NewReader(html)
 		http.ServeContent(w, r, "foo.html", time.Time{}, content)

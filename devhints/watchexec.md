@@ -11,23 +11,16 @@ intro: |
   [mattgreen/watchexec](https://github.com/mattgreen/watchexec) runs commands whenever certain files change.
 ---
 
-### Installation
+# Intro
 
-#### OSX
+[watchexec](https://github.com/mattgreen/watchexec) executes commands in response to file modifications
 
-```bash
-brew install watchexec
-```
+Installation:
+* Mac OS X: `brew install watchexec`
+* Rust: `cargo install watchexec`
+* Linux and Windows: get it from [GitHub releases](https://github.com/mattgreen/watchexec).
 
-#### Rust
-
-```bash
-cargo install watchexec
-```
-
-For Linux and Windows, get it from [GitHub releases](https://github.com/mattgreen/watchexec).
-
-### Getting started
+# Getting started
 
 ```bash
 watchexec --exts js,jsx -- npm test
@@ -41,21 +34,21 @@ watchman -w lib -w test -- npm test
 
 Runs `npm test` when `lib/` and `test/` files change.
 
-### Other options
+# Other options
 
-#### Flags
+**Flags**:
 
+| name | description |
+| --- | --- |
 | `-c` `--clear`   | Clear screen                         |
 | `-r` `--restart` | Restart process if its still running |
 
-#### Options
+**Options**:
 
+| name | description |
+| --- | --- |
 | `-s` `--signal SIGKILL` | Kill signal to use            |
 | `-d` `--debounce MS`    | Debounce by `MS` milliseconds |
 | `-e` `--exts EXTS`      | Extensions                    |
 | `-i` `--ignore PATTERN` | Ignore these files            |
 | `-w` `--watch PATH`     | Watch these directories       |
-
-## Also see
-
-* [mattgreen/watchexec](https://github.com/mattgreen/watchexec) _(github.com)_

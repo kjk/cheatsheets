@@ -24,8 +24,6 @@ var (
 	limitCheatsheets = false
 
 	whitelist = []string{"python3", "go"}
-	blacklist = []string{"101", "absinthe", "analytics.js", "analytics", "angularjs", "appcache", "cheatsheet-styles", "deku@1", "enzyme@2", "figlet", "firefox", "go", "index", "index@2016", "ledger-csv", "ledger-examples", "ledger-format", "ledger-periods",
-		"ledger-query", "ledger", "package", "phoenix-ecto@1.2", "phoenix-ecto@1.3", "phoenix@1.2", "python", "react@0.14", "README", "vue@1.0.28"}
 )
 
 func init() {
@@ -228,15 +226,14 @@ func cleanupMarkdown(md []byte) []byte {
 
 type cheatSheet struct {
 	fileNameBase string // unique name from file name, without extension
-	mdFileName   string // path relative to www/cheatsheets directory
+	mdFileName   string // path relative to . directory
 	mdPath       string
 	htmlFullPath string
 	// TODO: rename htmlFileName
-	PathHTML   string // path relative to www/cheatsheets directory
+	PathHTML   string // path relative to . directory
 	mdWithMeta []byte
 	md         []byte
 	meta       map[string]string
-	html       []byte
 	Title      string
 }
 
@@ -571,7 +568,7 @@ func readCheatSheets() []*cheatSheet {
 		}
 	}
 
-	readFromDir("devhints", blacklist, whitelist)
+	readFromDir("devhints", nil, whitelist)
 	readFromDir("good", nil, whitelist)
 
 	{
@@ -613,42 +610,3 @@ func readCheatSheets() []*cheatSheet {
 	logf(ctx(), "%d cheatsheets\n", len(cheatsheets))
 	return cheatsheets
 }
-
-func genCheatSheetFiles() map[string][]byte {
-	cheatsheets := readCheatSheets()
-
-	files := map[string][]byte{}
-	{
-		path := filepath.Join(csDir, "cheatsheet.js")
-		name := filepath.Join("s", "cheatsheet.js")
-		files[name] = readFileMust(path)
-	}
-	{
-		path := filepath.Join(csDir, "cheatsheet.css")
-		name := filepath.Join("s", "cheatsheet.css")
-		files[name] = readFileMust(path)
-	}
-	for _, cs := range cheatsheets {
-		d := cs.html
-		name := filepath.Base(cs.htmlFullPath)
-		files[name] = d
-	}
-	files["index.html"] = []byte(genIndexHTML(cheatsheets))
-	return files
-}
-
-/*
-func previewCheatSheets() {
-	files := genCheatSheetFiles()
-	uri := uploadFilesToInstantPreviewMust(files)
-	openBrowser(uri)
-}
-
-func genCheatSheets(outDir string) {
-	files := genCheatSheetFiles()
-	for fileName, d := range files {
-		path := filepath.Join("cheatsheets", fileName)
-		wwwWriteFile(path, d)
-	}
-}
-*/
