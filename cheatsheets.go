@@ -422,8 +422,7 @@ func buildFlatToc(toc []*tocNode, tocLevel int) []*tocNode {
 }
 
 func genCheatsheetHTML(cs *cheatSheet) []byte {
-
-	//logf("csGenHTML: for '%s'\n", cs.mdPath)
+	logf(ctx(), "csGenHTML: for '%s'\n", cs.mdPath)
 	md := cleanupMarkdown(cs.md)
 
 	parser := newCsMarkdownParser()

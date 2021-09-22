@@ -3,6 +3,8 @@ title: Ledger examples
 category: Ledger
 ---
 
+# Intro
+
 Inspecting transactions:
 
     # show me expenses for october (--period)

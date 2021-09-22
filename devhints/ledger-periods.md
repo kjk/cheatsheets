@@ -3,6 +3,8 @@ title: Ledger periods
 category: Ledger
 ---
 
+# Intro
+
     [INTERVAL] [BEGIN] [END]
 
 Interval:
