@@ -79,6 +79,14 @@ func readFileMust(path string) []byte {
 	return d
 }
 
+func getFileSize(path string) int64 {
+	st, err := os.Lstat(path)
+	if err == nil {
+		return st.Size()
+	}
+	return -1
+}
+
 func normalizeNewlinesInPlace(d []byte) []byte {
 	wi := 0
 	n := len(d)

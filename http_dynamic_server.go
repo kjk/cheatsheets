@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,62 +12,66 @@ import (
 	"time"
 )
 
-type Content struct {
-	URL     string
-	Content []byte
+// Handler represents one or more urls and their content
+type Handler interface {
+	// returns a handler for this url
+	// if nil, doesn't handle this url
+	Get(url string) func(w http.ResponseWriter, r *http.Request)
+	// get all urls handled by this Handler
+	// useful for e.g. saving a static copy to disk
+	URLS() []string
 }
 
-// URLContent represents one or more urls and their content
-type URLContent interface {
-	// returns true if this URLContent matches url
-	Matches(url string) bool
-	// if Matches returns true call Send() to send the output
-	// this allows doing things like redirects
-	// uri, if given, overrides r.URL
-	Send(w http.ResponseWriter, r *http.Request, uri string) error
-	// get all content. useful for e.g. saving a static copy to disk
-	Content() []*Content
-}
-
-type FileOnDisk struct {
+type FileHandler struct {
 	// Path on disk for this file
 	Path string
 	// list of urls that this file matches
 	URL []string
 }
 
-func (f *FileOnDisk) Matches(url string) bool {
-	for _, u := range f.URL {
-		// urls are case-insensitive
-		if strings.EqualFold(u, url) {
-			return true
-		}
-	}
-	return false
+// FileWriter implements http.ResponseWriter interface for writing to a file
+type FileWriter struct {
+	w io.Writer
 }
 
-func (f *FileOnDisk) Send(w http.ResponseWriter, r *http.Request, uri string) error {
-	panicIf(!fileExists(f.Path), "file '%s' doesn't exist")
-	http.ServeFile(w, r, f.Path)
+func (w *FileWriter) Header() http.Header {
 	return nil
 }
 
-func (f *FileOnDisk) Content() []*Content {
-	d := readFileMust(f.Path)
-	var res []*Content
-	for _, uri := range f.URL {
-		res = append(res, &Content{
-			URL:     uri,
-			Content: d,
-		})
-	}
-	return res
+func (w *FileWriter) Write(p []byte) (int, error) {
+	return w.w.Write(p)
 }
 
-func NewFileOnDisk(path string, url string, urls ...string) *FileOnDisk {
+func (w *FileWriter) WriteHeader(statusCode int) {
+	// no-op
+}
+
+func (h *FileHandler) Get(url string) func(w http.ResponseWriter, r *http.Request) {
+	for _, u := range h.URL {
+		// urls are case-insensitive
+		if strings.EqualFold(u, url) {
+			return func(w http.ResponseWriter, r *http.Request) {
+				if r == nil {
+					d := readFileMust(h.Path)
+					_, err := w.Write(d)
+					must(err)
+				} else {
+					http.ServeFile(w, r, h.Path)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (h *FileHandler) URLS() []string {
+	return h.URL
+}
+
+func NewFileHandler(path string, url string, urls ...string) *FileHandler {
 	// early detection of problems
 	panicIf(!fileExists(path), "file '%s' doesn't exist", path)
-	res := &FileOnDisk{
+	res := &FileHandler{
 		Path: path,
 		URL:  []string{url},
 	}
@@ -74,41 +79,43 @@ func NewFileOnDisk(path string, url string, urls ...string) *FileOnDisk {
 	return res
 }
 
-type DynamicContent struct {
-	matches func(string) bool
-	send    func(http.ResponseWriter, *http.Request, string) error
-	content func() []*Content
+type DynamicHandler struct {
+	matches func(string) func(http.ResponseWriter, *http.Request)
+	urls    func() []string
 }
 
-func (f *DynamicContent) Matches(uri string) bool {
-	return f.matches(uri)
+func (h *DynamicHandler) Get(uri string) func(http.ResponseWriter, *http.Request) {
+	return h.matches(uri)
 }
 
-func (f *DynamicContent) Send(w http.ResponseWriter, r *http.Request, uri string) error {
-	return f.send(w, r, uri)
+func (h *DynamicHandler) URLS() []string {
+	return h.urls()
 }
 
-func (f *DynamicContent) Content() []*Content {
-	return f.content()
-}
-
-func NewDynamicContent(matches func(string) bool, send func(w http.ResponseWriter, r *http.Request, uri string) error, content func() []*Content) *DynamicContent {
-	return &DynamicContent{
+func NewDynamicHandler(matches func(string) func(http.ResponseWriter, *http.Request), urls func() []string) *DynamicHandler {
+	return &DynamicHandler{
 		matches: matches,
-		send:    send,
-		content: content,
+		urls:    urls,
 	}
 }
 
-func WriteServerFilesToDir(dir string, files []URLContent) {
-	for _, f := range files {
-		all := f.Content()
-		for _, c := range all {
-			path := filepath.Join(dir, c.URL)
-			d := c.Content
+func WriteServerFilesToDir(dir string, handlers []Handler) {
+	for _, h := range handlers {
+		urls := h.URLS()
+		for _, uri := range urls {
+			path := filepath.Join(dir, uri)
 			must(createDirForFile(path))
-			must(os.WriteFile(path, d, 0644))
-			sizeStr := formatSize(int64(len(d)))
+			f, err := os.Create(path)
+			must(err)
+			fw := &FileWriter{
+				w: f,
+			}
+			serve := h.Get(uri)
+			panicIf(serve == nil, "must have a handler for '%s'", uri)
+			serve(fw, nil)
+			err = f.Close()
+			must(err)
+			sizeStr := formatSize(getFileSize(path))
 			logf(ctx(), "WriteServerFilesToDir: '%s' of size %s\n", path, sizeStr)
 		}
 	}
@@ -116,7 +123,7 @@ func WriteServerFilesToDir(dir string, files []URLContent) {
 
 // ServerConfig represents all files known to the server
 type ServerConfig struct {
-	Files     []URLContent
+	Handlers  []Handler
 	CleanURLS bool
 }
 
@@ -136,10 +143,10 @@ func StartServer(server *ServerConfig) func() {
 			uri = "/index.html"
 		}
 		trySend := func(uri string) bool {
-			for _, f := range server.Files {
-				if f.Matches(uri) {
+			for _, h := range server.Handlers {
+				if send := h.Get(uri); send != nil {
 					logf(ctx(), "handleFile: found match for '%s'\n", uri)
-					f.Send(w, r, uri)
+					send(w, r)
 					return true
 				}
 			}

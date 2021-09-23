@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func buildContentCheatsheets() []URLContent {
+func buildContentCheatsheets() []Handler {
 	cheatsheets := readCheatSheets()
 	csFindByURL := func(uri string) *cheatSheet {
 		// match /cheatsheet/go.html => go
@@ -35,65 +35,55 @@ func buildContentCheatsheets() []URLContent {
 		logf(ctx(), "csFindByURL: no match for '%s'\n", uri)
 		return nil
 	}
-	csMatches := func(uri string) bool {
+	csMatches := func(uri string) func(w http.ResponseWriter, r *http.Request) {
 		cs := csFindByURL(uri)
-		return cs != nil
-	}
-	csSend := func(w http.ResponseWriter, r *http.Request, uri string) error {
-		if uri == "" {
-			uri = r.URL.Path
+		send := func(w http.ResponseWriter, r *http.Request) {
+			panicIf(cs == nil, "no match for '%s'", uri)
+			processCheatSheet(cs)
+			html := genCheatsheetHTML(cs)
+			if r == nil {
+				w.Write(html)
+				return
+			}
+			content := bytes.NewReader(html)
+			http.ServeContent(w, r, "foo.html", time.Time{}, content)
 		}
-		cs := csFindByURL(uri)
-		panicIf(cs == nil, "no match for '%s'", uri)
-		processCheatSheet(cs)
-		html := genCheatsheetHTML(cs)
-		content := bytes.NewReader(html)
-		http.ServeContent(w, r, "foo.html", time.Time{}, content)
-		return nil
+		if cs == nil {
+			return nil
+		}
+		return send
 	}
-	csContent := func() []*Content {
-		var res []*Content
+	csURLS := func() []string {
+		var res []string
 		for _, cs := range cheatsheets {
 			uri := "/cheatsheet/" + cs.fileNameBase + ".html"
-			d := genCheatsheetHTML(cs)
-			res = append(res, &Content{
-				URL:     uri,
-				Content: d,
-			})
+			res = append(res, uri)
 		}
 		return res
 	}
 
-	csIndexMatches := func(uri string) bool {
-		matches := uri == "/index.html"
-		if matches {
-			logf(ctx(), "csIndexMatches: match for '%s'\n", uri)
+	csIndexMatches := func(uri string) func(w http.ResponseWriter, r *http.Request) {
+		if uri != "/index.html" {
+			return nil
 		}
-		return matches
-	}
-	csIndexSend := func(w http.ResponseWriter, r *http.Request, uri string) error {
-		logf(ctx(), "csIndexSend: '%s'\n", r.URL)
-		if uri == "" {
-			uri = r.URL.Path
+		send := func(w http.ResponseWriter, r *http.Request) {
+			logf(ctx(), "csIndexSend: '%s'\n", r.URL)
+			html := []byte(genIndexHTML(cheatsheets))
+			if r == nil {
+				w.Write(html)
+				return
+			}
+			content := bytes.NewReader(html)
+			http.ServeContent(w, r, "foo.html", time.Time{}, content)
 		}
-		panicIf(!csIndexMatches(uri), "no match for '%s'", uri)
-		html := genIndexHTML(cheatsheets)
-		content := bytes.NewReader([]byte(html))
-		http.ServeContent(w, r, "foo.html", time.Time{}, content)
-		return nil
+		return send
 	}
-	csIndexContent := func() []*Content {
-		var res []*Content
-		d := genIndexHTML(cheatsheets)
-		res = append(res, &Content{
-			URL:     "/index.html",
-			Content: []byte(d),
-		})
-		return res
+	csIndexURLS := func() []string {
+		return []string{"/index.html"}
 	}
-	csIndexDynamic := NewDynamicContent(csIndexMatches, csIndexSend, csIndexContent)
-	csDynamic := NewDynamicContent(csMatches, csSend, csContent)
-	return []URLContent{csIndexDynamic, csDynamic}
+	csIndexDynamic := NewDynamicHandler(csIndexMatches, csIndexURLS)
+	csDynamic := NewDynamicHandler(csMatches, csURLS)
+	return []Handler{csIndexDynamic, csDynamic}
 }
 
 func buildServerFiles() *ServerConfig {
@@ -107,18 +97,18 @@ func buildServerFiles() *ServerConfig {
 		"/404.html",
 		"404.tmpl.html",
 	}
-	var files []URLContent
+	var handlers []Handler
 	for i := 0; i < len(staticFiles); i += 2 {
 		uri := staticFiles[i]
 		path := staticFiles[i+1]
-		f := NewFileOnDisk(path, uri)
-		files = append(files, f)
+		h := NewFileHandler(path, uri)
+		handlers = append(handlers, h)
 	}
 	cheatsheets := buildContentCheatsheets()
-	files = append(files, cheatsheets...)
+	handlers = append(handlers, cheatsheets...)
 
 	return &ServerConfig{
-		Files:     files,
+		Handlers:  handlers,
 		CleanURLS: true,
 	}
 }
@@ -134,7 +124,7 @@ func generateStatic() {
 		logf(ctx(), "generateStatic() finished in %s\n", formatDuration(time.Since(timeStart)))
 	}()
 	sf := buildServerFiles()
-	WriteServerFilesToDir("www_generated", sf.Files)
+	WriteServerFilesToDir("www_generated", sf.Handlers)
 }
 
 func deployToRender() {
