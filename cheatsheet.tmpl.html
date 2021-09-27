@@ -247,7 +247,7 @@
             let results = [];
             for (const el of searchIndex) {
                 const a = [el[0],
-                    [], el[2], el[3]
+                [], el[2], el[3]
                 ];
                 results.push(a);
             }
@@ -264,9 +264,9 @@
                 const idx = el[1].indexOf(term);
                 if (idx !== -1) {
                     const a = [el[0],
-                        [
-                            [idx, len(term)]
-                        ], el[2], el[3]
+                    [
+                        [idx, len(term)]
+                    ], el[2], el[3]
                     ];
                     results.push(a);
                 }
@@ -381,15 +381,23 @@
             padding-left: 3rem;
         }
 
-        .toc2 {
+        .toc {
             font-size: 11pt;
             position: sticky;
             top: 0;
             z-index: 9;
             line-height: 1.3em;
+
+            max-height: 9em;
+            overflow-x: clip;
+            overflow-y: clip;
         }
 
-        .toc2-h {
+        .toc:hover {
+            max-height: fit-content;
+        }
+
+        .toc-h {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -398,19 +406,19 @@
             background-color: lightyellow !important;
         }
 
-        .toc2-h:hover {
+        .toc-h:hover {
             background-color: yellow !important;
             cursor: pointer;
         }
 
-        .toc2-l {
+        .toc-l {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             color: blue;
         }
 
-        .toc2-l:hover {
+        .toc-l:hover {
             background-color: #f0f0f0;
             cursor: pointer;
         }
@@ -428,7 +436,8 @@
       selectedIdx: -1,
       show: false
      } }" x-init="$watch('search.term', val => { doSearch(search) })">
-            <input x-model="search.term" x-on:focus="searchFocused(search)" @keyup.escape="cancelSearch(search)" id="cs-search-input" type="text" placeholder="'/' to search" class="relative" style="width: 32em;">
+            <input x-model="search.term" x-on:focus="searchFocused(search)" @keyup.escape="cancelSearch(search)"
+                id="cs-search-input" type="text" placeholder="'/' to search" class="relative" style="width: 32em;">
             <div x-show="search.show" class="overlay" x-on:click="cancelSearch(search)">
                 <div class="box p-0 bg-white search-results-wrap">
                     <div class="results">
@@ -438,7 +447,10 @@
                         </template>
 
                         <template x-for="(result, index) in search.results" :key="result[2]">
-                            <div class="si" :class="clsSearchItem(result, index == search.selectedIdx)" x-on:click.prevent="searchItemClicked(search, result)" x-html="hilightSearchResult(result[0], result[1])" x-effect="ensureVisible($el, index == search.selectedIdx)"></div>
+                            <div class="si" :class="clsSearchItem(result, index == search.selectedIdx)"
+                                x-on:click.prevent="searchItemClicked(search, result)"
+                                x-html="hilightSearchResult(result[0], result[1])"
+                                x-effect="ensureVisible($el, index == search.selectedIdx)"></div>
                         </template>
                     </div>
                     <div class="help">
@@ -453,16 +465,16 @@
             edit</a>
     </div>
 
-    <div class="toc2 cols box">
+    <div class="toc cols box">
         {{#toc}}
-            {{#if children}}
-                <div class="toc2-h {{class}}" data-link="{{ID}}">{{content}}</div>
-                {{#children}}
-                    <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
-                {{/children}}
-            {{else}}
-                <div class="toc2-l {{class}}" data-link="{{ID}}">{{content}}</div>
-            {{/if}}
+        {{#if children}}
+        <div class="toc-h {{class}}" data-link="{{ID}}">{{content}}</div>
+        {{#children}}
+        <div class="toc-l {{class}}" data-link="{{ID}}">{{content}}</div>
+        {{/children}}
+        {{else}}
+        <div class="toc-l {{class}}" data-link="{{ID}}">{{content}}</div>
+        {{/if}}
         {{/toc}}
     </div>
 

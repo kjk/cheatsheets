@@ -114,17 +114,6 @@ h2 {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-.toc {
-    /* font-weight: bold; */
-    color: #880000;
-    /* font-family: monospace; */
-    font-size: 11pt;
-    position: sticky;
-    top: 0;
-    z-index: 9;
-    line-height: 1.3em;
-}
-
 /* search item */
 .si {
     padding-right: 0.5rem;
