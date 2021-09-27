@@ -67,7 +67,7 @@ func buildContentCheatsheets() []Handler {
 			return nil
 		}
 		send := func(w http.ResponseWriter, r *http.Request) {
-			logf(ctx(), "csIndexSend: '%s'\n", r.URL)
+			logf(ctx(), "csIndexSend: '%s'\n", uri)
 			html := []byte(genIndexHTML(cheatsheets))
 			if r == nil {
 				w.Write(html)
