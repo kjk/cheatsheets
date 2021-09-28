@@ -836,8 +836,6 @@ func formatDuration(d time.Duration) string {
 }
 ```
 
-
-
 ## runCmdMust
 
 ```go
@@ -906,5 +904,33 @@ func cdUpDir(dirName string) {
 		panicIf(dir == parentDir, "invalid startDir: '%s', dir: '%s'", startDir, dir)
 		dir = parentDir
 	}
+}
+```
+
+## encodeBase64
+
+```go
+const base64Chars = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+// encodeBase64 encodes n as base64
+func encodeBase64(n int) string {
+	var buf [16]byte
+	size := 0
+	for {
+		buf[size] = base64Chars[n%36]
+		size++
+		if n < 36 {
+			break
+		}
+		n /= 36
+	}
+	end := size - 1
+	for i := 0; i < end; i++ {
+		b := buf[i]
+		buf[i] = buf[end]
+		buf[end] = b
+		end--
+	}
+	return string(buf[:size])
 }
 ```
