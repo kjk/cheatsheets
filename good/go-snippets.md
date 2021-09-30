@@ -19,6 +19,24 @@ func must(err error) {
 }
 ```
 
+## panicIfErr
+
+```go
+func panicIfErr(err error, args ...interface{}) {
+	if err == nil {
+		return
+	}
+	s := err.Error()
+	if len(args) > 0 {
+		s = fmt.Sprintf("%s", args[0])
+		if len(args) > 1 {
+			s = fmt.Sprintf(s, args[1:]...)
+		}
+	}
+	panic(s)
+}
+```
+
 ## panicIf
 
 ```go
@@ -168,6 +186,16 @@ func expandTildeInPath(s string) string {
 		return dir + s[1:]
 	}
 	return s
+}
+```
+
+## closeNoError
+
+```go
+// closeNoError is like io.Closer Close() but ignores an error
+// use as: defer CloseNoError(f)
+func closeNoError(f io.Closer) {
+	_ = f.Close()
 }
 ```
 
