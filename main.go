@@ -101,7 +101,7 @@ func buildServerFiles() *ServerConfig {
 	for i := 0; i < len(staticFiles); i += 2 {
 		uri := staticFiles[i]
 		path := staticFiles[i+1]
-		h := NewFileHandler(path, uri)
+		h := NewFilesHandler(uri, path)
 		handlers = append(handlers, h)
 	}
 	cheatsheets := buildContentCheatsheets()
