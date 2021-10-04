@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"net/http"
 	"os"
 	"os/signal"
@@ -68,8 +69,35 @@ func serveFile(w http.ResponseWriter, r *http.Request, path string) {
 	http.ServeFile(w, r, path)
 }
 
+// d can be nil, in which case no caching
+func serve404FileCached(w http.ResponseWriter, r *http.Request, path string, cached *[]byte) {
+	var d []byte
+	if cached != nil && len(*cached) > 0 {
+		d = *cached
+	} else {
+		var err error
+		d, err = os.ReadFile(path)
+		must(err)
+		if cached != nil {
+			*cached = d
+		}
+	}
+	ctype := mime.TypeByExtension(filepath.Ext(path))
+	if ctype != "" {
+		w.Header().Set("Content-Type", ctype)
+	}
+
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write(d)
+}
+
 func makeServeFile(path string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(path, "404.html") {
+			serve404FileCached(w, r, path, nil)
+			return
+		}
 		serveFile(w, r, path)
 	}
 }
@@ -382,6 +410,16 @@ func WriteServerFilesToZip(handlers []Handler) ([]byte, error) {
 	return zipCreateFromContent(files)
 }
 
+type CodeCaptureWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (w *CodeCaptureWriter) WriteHeader(statusCode int) {
+	w.statusCode = statusCode
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
 // returns function that will wait for SIGTERM signal (e.g. Ctrl-C) and
 // shutdown the server
 func StartServer(server *ServerConfig) func() {
@@ -396,6 +434,7 @@ func StartServer(server *ServerConfig) func() {
 	}
 	mux := &http.ServeMux{}
 	handleAll := func(w http.ResponseWriter, r *http.Request) {
+		// TODO: recover panic
 		uri := r.URL.Path
 		if strings.HasSuffix(uri, "/") {
 			uri += "index.html"
@@ -403,8 +442,9 @@ func StartServer(server *ServerConfig) func() {
 		trySend := func(uri string) bool {
 			for _, h := range server.Handlers {
 				if send := h.Get(uri); send != nil {
-					logf(ctx(), "handleFile: found match for '%s'\n", uri)
-					send(w, r)
+					cw := CodeCaptureWriter{ResponseWriter: w}
+					send(&cw, r)
+					logreq(r, cw.statusCode)
 					return true
 				}
 			}
@@ -438,6 +478,7 @@ func StartServer(server *ServerConfig) func() {
 				res = append(res, s)
 				parts = parts[:len(parts)-1]
 			}
+			res = append(res, "/404.html")
 			return res
 		}
 
@@ -445,12 +486,11 @@ func StartServer(server *ServerConfig) func() {
 		a := gen404Candidates(uri)
 		for _, uri404 := range a {
 			if trySend(uri404) {
-				logf(ctx(), "handleFile: sent 404 '%s' for '%s'\n", uri404, uri)
 				return
 			}
 		}
-		logf(ctx(), "handleFile: no match for '%s'\n", uri)
 		http.NotFound(w, r)
+		logreq(r, http.StatusNotFound)
 	}
 	mux.HandleFunc("/", handleAll)
 	var handler http.Handler = mux

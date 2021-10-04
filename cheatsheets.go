@@ -509,7 +509,7 @@ func genIndexHTML(cheatsheets []*cheatSheet) string {
 }
 
 func readCheatSheets() []*cheatSheet {
-
+	logvf(ctx(), "readCheatSheets\n")
 	cheatsheets := []*cheatSheet{}
 
 	isBlacklisted := func(s string, a []string) bool {

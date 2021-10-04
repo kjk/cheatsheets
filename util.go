@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -21,6 +20,7 @@ func must(err error) {
 		panic(err.Error())
 	}
 }
+
 func ctx() context.Context {
 	return context.Background()
 }
@@ -37,13 +37,6 @@ func panicIf(cond bool, arg ...interface{}) {
 		}
 	}
 	panic(s)
-}
-
-func logf(ctx context.Context, s string, arg ...interface{}) {
-	if len(arg) > 0 {
-		s = fmt.Sprintf(s, arg...)
-	}
-	fmt.Print(s)
 }
 
 func isWindows() bool {
@@ -121,10 +114,6 @@ func formatSize(n int64) string {
 		}
 	}
 	return fmt.Sprintf("%d bytes", n)
-}
-
-func createDirForFile(path string) error {
-	return os.MkdirAll(filepath.Dir(path), 0755)
 }
 
 // formats duration in a more human friendly way
