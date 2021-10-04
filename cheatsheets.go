@@ -18,7 +18,8 @@ import (
 )
 
 const csDir = "."
-const alpineURL = "//unpkg.com/alpinejs@3.4.0/dist/cdn.min.js"
+const csTmplDir = "www"
+const alpineURL = "//unpkg.com/alpinejs@3.4.2/dist/cdn.min.js"
 
 var (
 	limitCheatsheets = false
@@ -444,7 +445,7 @@ func genCheatsheetHTML(cs *cheatSheet) []byte {
 	renderer := newMarkdownHTMLRenderer("")
 	mdHTML := string(markdown.Render(doc, renderer))
 
-	tpl := string(readFileMust(filepath.Join(csDir, "cheatsheet.tmpl.html")))
+	tpl := string(readFileMust(filepath.Join(csTmplDir, "cheatsheet.tmpl.html")))
 
 	// on windows mdFileName is a windows-style path so change to unix/url style
 	mdFileName := strings.Replace(cs.mdFileName, `\`, "/", -1)
@@ -497,7 +498,7 @@ func genIndexHTML(cheatsheets []*cheatSheet) string {
 		cats = append(cats, v)
 	}
 
-	tpl := string(readFileMust(filepath.Join(csDir, "index.tmpl.html")))
+	tpl := string(readFileMust(filepath.Join(csTmplDir, "index.tmpl.html")))
 	ctx := map[string]interface{}{
 		"cheatsheets":      cheatsheets,
 		"CheatsheetsCount": len(cheatsheets),

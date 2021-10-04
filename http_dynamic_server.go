@@ -317,97 +317,82 @@ func NewInMemoryFilesHandler(files map[string][]byte) *InMemoryFilesHandler {
 	}
 }
 
-func WriteServerFilesToDir(dir string, handlers []Handler) (int, int64) {
-	nFiles := 0
-	totalSize := int64(0)
-	dirCreated := map[string]bool{}
-	for _, h := range handlers {
-		urls := h.URLS()
-		for _, uri := range urls {
-			path := filepath.Join(dir, uri)
-
-			// optimize for writing lots of files
-			// I assume that even a no-op os.MkdirAll()
-			// might be somewhat expensive
-			fileDir := filepath.Dir(path)
-			if !dirCreated[fileDir] {
-				must(os.MkdirAll(fileDir, 0755))
-				dirCreated[fileDir] = true
-			}
-
-			f, err := os.Create(path)
-			must(err)
-			fw := &FileWriter{
-				w: f,
-			}
-			serve := h.Get(uri)
-			panicIf(serve == nil, "must have a handler for '%s'", uri)
-			serve(fw, nil)
-			err = f.Close()
-			must(err)
-			fsize := getFileSize(path)
-			totalSize += fsize
-			sizeStr := formatSize(fsize)
-			if nFiles%256 == 0 {
-				logf(ctx(), "WriteServerFilesToDir: file %d '%s' of size %s\n", nFiles+1, path, sizeStr)
-			}
-			nFiles++
-		}
-	}
-	return nFiles, totalSize
-}
-
-func zipWriteContent(zw *zip.Writer, files map[string][]byte) error {
-	for name, data := range files {
-		fw, err := zw.Create(name)
-		if err != nil {
-			return err
-		}
-		_, err = fw.Write(data)
-		if err != nil {
-			return err
-		}
-	}
-	return zw.Close()
-}
-
-func zipCreateFromContent(files map[string][]byte) ([]byte, error) {
+func iterHandlers(handlers []Handler, fn func(uri string, d []byte)) {
 	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
-		return flate.NewWriter(out, flate.BestCompression)
-	})
-	err := zipWriteContent(zw, files)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-func WriteServerFilesToZip(handlers []Handler) ([]byte, error) {
-	nFiles := 0
-	files := map[string][]byte{}
 	for _, h := range handlers {
 		urls := h.URLS()
 		for _, uri := range urls {
-			path := strings.TrimPrefix(uri, "/")
-			var buf bytes.Buffer
+			buf.Reset()
 			fw := &FileWriter{
 				w: &buf,
 			}
 			serve := h.Get(uri)
 			panicIf(serve == nil, "must have a handler for '%s'", uri)
 			serve(fw, nil)
-			d := buf.Bytes()
-			files[path] = d
-			sizeStr := formatSize(int64(len(d)))
-			if nFiles%128 == 0 {
-				logf(ctx(), "WriteServerFilesZip: %d file '%s' of size %s\n", nFiles+1, path, sizeStr)
-			}
-			nFiles++
 		}
 	}
-	return zipCreateFromContent(files)
+}
+
+func WriteServerFilesToDir(dir string, handlers []Handler) (int, int64) {
+	nFiles := 0
+	totalSize := int64(0)
+	dirCreated := map[string]bool{}
+
+	writeFile := func(uri string, d []byte) {
+		name := strings.TrimPrefix(uri, "/")
+		name = filepath.FromSlash(name)
+		path := filepath.Join(dir, name)
+		// optimize for writing lots of files
+		// I assume that even a no-op os.MkdirAll()
+		// might be somewhat expensive
+		fileDir := filepath.Dir(path)
+		if !dirCreated[fileDir] {
+			must(os.MkdirAll(fileDir, 0755))
+			dirCreated[fileDir] = true
+		}
+		err := os.WriteFile(path, d, 0644)
+		must(err)
+		fsize := int64(len(d))
+		totalSize += fsize
+		sizeStr := formatSize(fsize)
+		if nFiles%256 == 0 {
+			logf(ctx(), "WriteServerFilesToDir: file %d '%s' of size %s\n", nFiles+1, path, sizeStr)
+		}
+		nFiles++
+	}
+	iterHandlers(handlers, writeFile)
+	return nFiles, totalSize
+}
+
+func zipWriteFile(zw *zip.Writer, name string, data []byte) error {
+	fw, err := zw.Create(name)
+	if err != nil {
+		return err
+	}
+	_, err = fw.Write(data)
+	return err
+}
+
+func WriteServerFilesToZip(handlers []Handler) int {
+	nFiles := 0
+
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, flate.BestCompression)
+	})
+	writeFile := func(uri string, d []byte) {
+		name := strings.TrimPrefix(uri, "/")
+		err := zipWriteFile(zw, name, d)
+		must(err)
+		sizeStr := formatSize(int64(len(d)))
+		if nFiles%128 == 0 {
+			logf(ctx(), "WriteServerFilesToZip: %d file '%s' of size %s\n", nFiles+1, name, sizeStr)
+		}
+		nFiles++
+	}
+	iterHandlers(handlers, writeFile)
+	return nFiles
 }
 
 type CodeCaptureWriter struct {
@@ -420,9 +405,81 @@ func (w *CodeCaptureWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// returns function that will wait for SIGTERM signal (e.g. Ctrl-C) and
-// shutdown the server
-func StartServer(server *ServerConfig) func() {
+func (s *ServerConfig) FindHandlerExact(uri string) HandlerFunc {
+	for _, h := range s.Handlers {
+		if send := h.Get(uri); send != nil {
+			return send
+		}
+	}
+	return nil
+}
+
+func commonExt(uri string) bool {
+	ext := strings.ToLower(filepath.Ext(uri))
+	switch ext {
+	case ".html", ".js", ".css", ".txt", ".xml":
+		return true
+	}
+	return false
+}
+
+func gen404Candidates(uri string) []string {
+	parts := strings.Split(uri, "/")
+	n := len(parts)
+	for n > 0 {
+		n = len(parts) - 1
+		if parts[n] != "" {
+			break
+		}
+		parts = parts[:n]
+	}
+	var res []string
+	for len(parts) > 0 {
+		s := strings.Join(parts, "/") + "/404.html"
+		res = append(res, s)
+		parts = parts[:len(parts)-1]
+	}
+	res = append(res, "/404.html")
+	return res
+}
+
+func (s *ServerConfig) FindHandler(uri string) HandlerFunc {
+	if h := s.FindHandlerExact(uri); h != nil {
+		return h
+	}
+	// if we support clean urls, try find "/foo.html" for "/foo"
+	if s.CleanURLS && !commonExt(uri) {
+		if h := s.FindHandlerExact(uri + ".html"); h != nil {
+			return h
+		}
+	}
+	// try 404.html
+	a := gen404Candidates(uri)
+	for _, uri404 := range a {
+		if h := s.FindHandlerExact(uri404); h != nil {
+			return h
+		}
+	}
+	return nil
+}
+
+func (s *ServerConfig) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	uri := r.URL.Path
+	if strings.HasSuffix(uri, "/") {
+		uri = "/index.html"
+	}
+	serve := s.FindHandler(uri)
+	if serve != nil {
+		cw := CodeCaptureWriter{ResponseWriter: w}
+		serve(&cw, r)
+		logreq(r, cw.statusCode)
+		return
+	}
+	http.NotFound(w, r)
+	logreq(r, http.StatusNotFound)
+}
+
+func MakeHTTPServer(server *ServerConfig) *http.Server {
 	panicIf(server == nil, "must provide files")
 	httpPort := 8080
 	if server.Port != 0 {
@@ -432,79 +489,22 @@ func StartServer(server *ServerConfig) func() {
 	if isWindows() {
 		httpAddr = "localhost" + httpAddr
 	}
-	mux := &http.ServeMux{}
-	handleAll := func(w http.ResponseWriter, r *http.Request) {
-		// TODO: recover panic
-		uri := r.URL.Path
-		if strings.HasSuffix(uri, "/") {
-			uri += "index.html"
-		}
-		trySend := func(uri string) bool {
-			for _, h := range server.Handlers {
-				if send := h.Get(uri); send != nil {
-					cw := CodeCaptureWriter{ResponseWriter: w}
-					send(&cw, r)
-					logreq(r, cw.statusCode)
-					return true
-				}
-			}
-			return false
-		}
-		if trySend(uri) {
-			return
-		}
-		ext := strings.ToLower(filepath.Ext(uri))
-		shouldRepeat := server.CleanURLS
-		switch ext {
-		case ".html", ".js", ".css", ".txt", ".xml":
-			shouldRepeat = false
-		}
-		if shouldRepeat && trySend(uri+".html") {
-			return
-		}
-		gen404Candidates := func(uri string) []string {
-			parts := strings.Split(uri, "/")
-			n := len(parts)
-			for n > 0 {
-				n = len(parts) - 1
-				if parts[n] != "" {
-					break
-				}
-				parts = parts[:n]
-			}
-			var res []string
-			for len(parts) > 0 {
-				s := strings.Join(parts, "/") + "/404.html"
-				res = append(res, s)
-				parts = parts[:len(parts)-1]
-			}
-			res = append(res, "/404.html")
-			return res
-		}
-
-		// try 404.html
-		a := gen404Candidates(uri)
-		for _, uri404 := range a {
-			if trySend(uri404) {
-				return
-			}
-		}
-		http.NotFound(w, r)
-		logreq(r, http.StatusNotFound)
-	}
-	mux.HandleFunc("/", handleAll)
-	var handler http.Handler = mux
 	httpSrv := &http.Server{
 		ReadTimeout:  120 * time.Second,
 		WriteTimeout: 120 * time.Second,
 		IdleTimeout:  120 * time.Second, // introduced in Go 1.8
-		Handler:      handler,
+		Handler:      server,
 	}
 	httpSrv.Addr = httpAddr
-	ctx := ctx()
-	logf(ctx, "Starting server on http://%s'\n", httpAddr)
+	return httpSrv
+}
+
+// returns function that will wait for SIGTERM signal (e.g. Ctrl-C) and
+// shutdown the server
+func StartHTTPServer(httpSrv *http.Server) func() {
+	logf(ctx(), "Starting server on http://%s'\n", httpSrv.Addr)
 	if isWindows() {
-		openBrowser(fmt.Sprintf("http://%s", httpAddr))
+		openBrowser(fmt.Sprintf("http://%s", httpSrv.Addr))
 	}
 
 	chServerClosed := make(chan bool, 1)
@@ -515,7 +515,7 @@ func StartServer(server *ServerConfig) func() {
 			err = nil
 		}
 		must(err)
-		logf(ctx, "trying to shutdown HTTP server\n")
+		logf(ctx(), "trying to shutdown HTTP server\n")
 		chServerClosed <- true
 	}()
 
@@ -524,21 +524,26 @@ func StartServer(server *ServerConfig) func() {
 		signal.Notify(c, os.Interrupt /* SIGINT */, syscall.SIGTERM)
 
 		sig := <-c
-		logf(ctx, "Got signal %s\n", sig)
+		logf(ctx(), "Got signal %s\n", sig)
 
 		if httpSrv != nil {
 			go func() {
 				// Shutdown() needs a non-nil context
-				_ = httpSrv.Shutdown(ctx)
+				_ = httpSrv.Shutdown(ctx())
 			}()
 			select {
 			case <-chServerClosed:
 				// do nothing
-				logf(ctx, "server shutdown cleanly\n")
+				logf(ctx(), "server shutdown cleanly\n")
 			case <-time.After(time.Second * 5):
 				// timeout
-				logf(ctx, "server killed due to shutdown timeout\n")
+				logf(ctx(), "server killed due to shutdown timeout\n")
 			}
 		}
 	}
+}
+
+func StartServer(server *ServerConfig) func() {
+	httpServer := MakeHTTPServer(server)
+	return StartHTTPServer(httpServer)
 }

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -97,13 +98,12 @@ func buildServerFiles() *ServerConfig {
 		"/404.html",
 		"404.html",
 	}
-	var handlers []Handler
 	for i := 0; i < len(staticFiles); i += 2 {
-		uri := staticFiles[i]
-		path := staticFiles[i+1]
-		h := NewFilesHandler(uri, path)
-		handlers = append(handlers, h)
+		name := staticFiles[i+1]
+		staticFiles[i+1] = filepath.Join("www", name)
 	}
+	h := NewFilesHandler(staticFiles...)
+	handlers := []Handler{h}
 	cheatsheets := buildContentCheatsheets()
 	handlers = append(handlers, cheatsheets...)
 
