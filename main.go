@@ -104,6 +104,9 @@ func buildServerDynamic() *server.Server {
 
 		"/404.html",
 		"404.html",
+
+		"/ping.txt",
+		"ping.txt",
 	}
 	for i := 0; i < len(staticFiles); i += 2 {
 		name := staticFiles[i+1]
@@ -142,10 +145,6 @@ func runServerStatic() {
 		Port:      httpPort,
 	}
 	RunServerProd(srv)
-	/*
-		waitFn := StartServer(srv)
-		waitFn()
-	*/
 }
 
 func generateStatic() {
