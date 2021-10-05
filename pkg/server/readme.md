@@ -63,10 +63,10 @@ func StartHTTPServer(httpSrv *http.Server) func() {
 			select {
 			case <-chServerClosed:
 				// do nothing
-				//logf(ctx(), "server shutdown cleanly\n")
+				logf(ctx(), "server shutdown cleanly\n")
 			case <-time.After(time.Second * 5):
 				// timeout
-				//logf(ctx(), "server killed due to shutdown timeout\n")
+				logf(ctx(), "server killed due to shutdown timeout\n")
 			}
 		}
 	}

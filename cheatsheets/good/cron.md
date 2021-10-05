@@ -6,6 +6,9 @@ layout: 2017/sheet
 
 ## Main
 
+Crontab is a Unix tool to schedule running a command at a given interval.
+https://crontab.guru/ helps to understand cron syntax.
+
 ### Format
 
 ```
@@ -41,6 +44,7 @@ Min  Hour Day  Mon  Weekday
 | Example        | Description                 |
 | ---            | ---                         |
 | `0 * * * *`    | every hour                  |
+| `0 8 * * *`    | every day at 8 am           |
 | `*/15 * * * *` | every 15 mins               |
 | `0 */2 * * *`  | every 2 hours               |
 | `0 18 * * 0-6` | every week Mon-Sat at 6pm   |
