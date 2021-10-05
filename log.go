@@ -155,6 +155,10 @@ var (
 		"Sec-Fetch-User",
 		"If-Modified-Since",
 		"Accept-Language",
+		"Cf-Ray",
+		"X-Request-Start",
+		"Cdn-Loop",
+		"X-Forwarded-Proto",
 	}
 	hdrsToNotLogMap map[string]bool
 )
@@ -189,7 +193,7 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 			continue
 		}
 		logf(ctx(), "%s: %s\n", k, v[0])
-		if len(v) > 0 {
+		if len(v) > 0 && len(v[0]) > 0 {
 			rec.Write(k, v[0])
 		}
 	}
