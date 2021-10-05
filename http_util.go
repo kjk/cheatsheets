@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -56,23 +55,6 @@ func recWriteNonEmpty(rec *siser.Record, k, v string) {
 	if v != "" {
 		rec.Write(k, v)
 	}
-}
-
-func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
-	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
-	httpLogMu.Lock()
-	defer httpLogMu.Unlock()
-	rec := &httpLogRec
-	rec.Reset()
-	rec.Write("req", fmt.Sprintf("%s %s %d", r.Method, r.RequestURI, code))
-	recWriteNonEmpty(rec, "referer", requestGetReferrer(r))
-	recWriteNonEmpty(rec, "host", r.Host)
-	rec.Write("ipaddr", requestGetRemoteAddress(r))
-	rec.Write("size", strconv.FormatInt(size, 10))
-	durMs := int64(dur / time.Millisecond)
-	rec.Write("duration", strconv.FormatInt(durMs, 10))
-	rec.Write("ua", requestGetUserAgent(r))
-	// TODO: write to log file
 }
 
 func MakeHTTPServer(srv *server.Server) *http.Server {

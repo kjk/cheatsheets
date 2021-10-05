@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -141,6 +142,57 @@ func logerrf(ctx context.Context, format string, args ...interface{}) {
 	logdna(s, now, true)
 }
 
-func logreq(r *http.Request, code int) {
-	logf(r.Context(), "%s %s %d\n", r.Method, r.RequestURI, code)
+var (
+	hdrsToNotLog = []string{
+		"Connection",
+		"Sec-Ch-Ua-Mobile",
+		"Sec-Fetch-Dest",
+		"Sec-Ch-Ua-Platform",
+		"Dnt",
+		"Upgrade-Insecure-Requests",
+		"Sec-Fetch-Site",
+		"Sec-Fetch-Mode",
+		"Sec-Fetch-User",
+		"If-Modified-Since",
+		"Accept-Language",
+	}
+	hdrsToNotLogMap map[string]bool
+)
+
+func shouldLogHeader(s string) bool {
+	if hdrsToNotLogMap == nil {
+		hdrsToNotLogMap = map[string]bool{}
+		for _, h := range hdrsToNotLog {
+			h = strings.ToLower(h)
+			hdrsToNotLogMap[h] = true
+		}
+	}
+	s = strings.ToLower(s)
+	return !hdrsToNotLogMap[s]
+}
+
+func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
+	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+	httpLogMu.Lock()
+	defer httpLogMu.Unlock()
+	rec := &httpLogRec
+	rec.Reset()
+	rec.Write("req", fmt.Sprintf("%s %s %d", r.Method, r.RequestURI, code))
+	recWriteNonEmpty(rec, "host", r.Host)
+	rec.Write("ipaddr", requestGetRemoteAddress(r))
+	rec.Write("size", strconv.FormatInt(size, 10))
+	durMs := int64(dur / time.Millisecond)
+	rec.Write("duration", strconv.FormatInt(durMs, 10))
+
+	for k, v := range r.Header {
+		if !shouldLogHeader(k) {
+			continue
+		}
+		logf(ctx(), "%s: %s\n", k, v[0])
+		if len(v) > 0 {
+			rec.Write(k, v[0])
+		}
+	}
+
+	// TODO: write to log file
 }
