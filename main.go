@@ -14,6 +14,7 @@ import (
 
 const (
 	dirWwwGenerated = "www_generated"
+	httpPort        = 9033
 )
 
 func buildContentCheatsheets() []server.Handler {
@@ -116,7 +117,7 @@ func buildServerDynamic() *server.Server {
 	return &server.Server{
 		Handlers:  handlers,
 		CleanURLS: true,
-		Port:      9033,
+		Port:      httpPort,
 	}
 }
 
@@ -138,10 +139,13 @@ func runServerStatic() {
 	srv := &server.Server{
 		Handlers:  []server.Handler{h},
 		CleanURLS: true,
-		Port:      9033,
+		Port:      httpPort,
 	}
-	waitFn := StartServer(srv)
-	waitFn()
+	RunServerProd(srv)
+	/*
+		waitFn := StartServer(srv)
+		waitFn()
+	*/
 }
 
 func generateStatic() {
