@@ -6,9 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/kjk/cheatsheets/pkg/filerotate"
+	"github.com/kjk/siser"
 )
 
 /*
@@ -22,6 +27,56 @@ const (
 	logdnaApp  = "cheatsheets"
 	logdnaHost = "main"
 )
+
+var (
+	logsDirCached = ""
+	httpLogSiser  *siser.Writer
+	httpLogRec    siser.Record
+	httpLogMu     sync.Mutex
+)
+
+func getLogsDir() string {
+	if logsDirCached != "" {
+		return logsDirCached
+	}
+	logsDirCached = "logs"
+	must(os.MkdirAll(logsDirCached, 0755))
+	return logsDirCached
+}
+
+func didRotateHTTPLog(path string, didRotate bool) {
+	// TODO: submit file to s3, delete files older than, say, 2 days
+	logf(ctx(), "didRotateHTTPLog: '%s', didRotate: %v\n", path, didRotate)
+}
+
+func NewLogHourly(dir string, didClose func(path string, didRotate bool)) (*filerotate.File, error) {
+	hourly := func(creationTime time.Time, now time.Time) string {
+		if filerotate.IsSameHour(creationTime, now) {
+			return ""
+		}
+		name := "httplog-" + now.Format("2006-01-02_15") + ".txt"
+		return filepath.Join(dir, name)
+	}
+	config := filerotate.Config{
+		DidClose:           didClose,
+		PathIfShouldRotate: hourly,
+	}
+	return filerotate.New(&config)
+}
+
+func openHTTPLog() func() {
+	dir := getLogsDir()
+
+	logFile, err := NewLogHourly(dir, didRotateHTTPLog)
+	must(err)
+	httpLogSiser = siser.NewWriter(logFile)
+	// TODO: should I change filerotate so that it opens the file immedaitely?
+	logf(context.Background(), "opened http log file '%s'\n", logFile.Path)
+	return func() {
+		_ = logFile.Close()
+		httpLogSiser = nil
+	}
+}
 
 func printLoggingStats() {
 	{

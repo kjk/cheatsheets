@@ -129,6 +129,10 @@ func runServerDynamic() {
 	logf(ctx(), "runServerDynamic starting\n")
 
 	srv := buildServerDynamic()
+
+	closeHTTPLog := openHTTPLog()
+	defer closeHTTPLog()
+
 	waitFn := StartServer(srv)
 	waitFn()
 }
@@ -144,6 +148,8 @@ func runServerStatic() {
 		CleanURLS: true,
 		Port:      httpPort,
 	}
+	closeHTTPLog := openHTTPLog()
+	defer closeHTTPLog() // TODO: this actually doesn't take in prod
 	RunServerProd(srv)
 }
 

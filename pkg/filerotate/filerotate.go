@@ -31,6 +31,14 @@ type File struct {
 	lastWritePos int64
 }
 
+func IsSameDay(t1, t2 time.Time) bool {
+	return t1.YearDay() == t2.YearDay()
+}
+
+func IsSameHour(t1, t2 time.Time) bool {
+	return t1.YearDay() == t2.YearDay() && t1.Hour() == t2.Hour()
+}
+
 func New(config *Config) (*File, error) {
 	if nil == config {
 		return nil, fmt.Errorf("must provide config")
@@ -41,12 +49,16 @@ func New(config *Config) (*File, error) {
 	file := &File{
 		config: *config,
 	}
+	err := file.reopenIfNeeded()
+	if err != nil {
+		return nil, err
+	}
 	return file, nil
 }
 
 func NewDaily(dir string, didClose func(path string, didRotate bool)) (*File, error) {
 	daily := func(creationTime time.Time, now time.Time) string {
-		if creationTime.YearDay() == now.YearDay() {
+		if IsSameDay(creationTime, now) {
 			return ""
 		}
 		name := now.Format("2006-01-02") + ".txt"
@@ -62,7 +74,7 @@ func NewDaily(dir string, didClose func(path string, didRotate bool)) (*File, er
 
 func NewHourly(dir string, didClose func(path string, didRotate bool)) (*File, error) {
 	hourly := func(creationTime time.Time, now time.Time) string {
-		if creationTime.YearDay() == now.YearDay() {
+		if IsSameHour(creationTime, now) {
 			return ""
 		}
 		name := now.Format("2006-01-02_15") + ".txt"

@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "**/www_generated": true
+  },
+  "search.exclude": {
+    "**/www_generated": true
+  }
+}

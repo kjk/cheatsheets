@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -45,11 +44,6 @@ func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
 	server.IterContent(handlers, writeFile)
 	return nFiles, totalSize
 }
-
-var (
-	httpLogRec siser.Record
-	httpLogMu  sync.Mutex
-)
 
 func recWriteNonEmpty(rec *siser.Record, k, v string) {
 	if v != "" {
