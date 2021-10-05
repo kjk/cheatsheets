@@ -568,7 +568,7 @@ func readCheatSheets() []*cheatSheet {
 		}
 	}
 
-	readFromDir("devhints", nil, whitelist)
+	//readFromDir("devhints", nil, whitelist)
 	readFromDir("good", nil, whitelist)
 
 	{

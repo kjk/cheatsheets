@@ -62,13 +62,6 @@
             search.show = len(term) > 0;
         }
 
-        function showRandomCheatsheetA() {
-            const els = document.getElementsByClassName("index-toc-item");
-            const idx = getRandomInt(len(els));
-            const el = document.getElementById("random-cs");
-            el.appendChild(els[idx].cloneNode(true));
-        }
-
         function execSearch(el) {
             //console.log("execSearch:", el);
             let url = el[2];
@@ -154,7 +147,6 @@
                     event.preventDefault();
                 }
             });
-            showRandomCheatsheetA();
         }
     </script>
     <style>
@@ -180,7 +172,7 @@
 
 <body onload="start()">
     <div class="flex flex-row align-center justify-space-between topnav">
-        <div></div>
+        <div><a href="https://blog.kowalczyk.info/contactme.html">contact</a></div>
         <div class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
         term: '',
         results: [],
@@ -211,7 +203,9 @@
                 </div>
             </div>
         </div>
-        <div><a href="https://github.com/kjk/cheatsheets/">GitHub</a></div>
+        <div>
+            <a href="https://github.com/kjk/cheatsheets/">GitHub</a>
+        </div>
     </div>
 
     <div class="mono cols mt-4">
@@ -220,10 +214,6 @@
             <a href="/cheatsheet/{{PathHTML}}">{{Title}}</a>
         </div>
         {{/cheatsheets}}
-    </div>
-
-    <div class="mono mt-4" id="random-cs">
-        Random node:&nbsp;
     </div>
 
     <div class="by-topic">

@@ -156,6 +156,7 @@ var (
 		"If-Modified-Since",
 		"Accept-Language",
 		"Cf-Ray",
+		"CF-Visitor",
 		"X-Request-Start",
 		"Cdn-Loop",
 		"X-Forwarded-Proto",
