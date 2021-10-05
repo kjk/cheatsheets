@@ -87,7 +87,7 @@ func MakeHTTPServer(srv *server.Server) *http.Server {
 	}
 
 	mainHandler := func(w http.ResponseWriter, r *http.Request) {
-		logf(ctx(), "mainHandler: '%s'\n", r.RequestURI)
+		//logf(ctx(), "mainHandler: '%s'\n", r.RequestURI)
 		timeStart := time.Now()
 		defer func() {
 			if p := recover(); p != nil {
