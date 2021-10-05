@@ -66,6 +66,11 @@ func fileExists(path string) bool {
 	return err == nil && st.Mode().IsRegular()
 }
 
+func dirExists(path string) bool {
+	st, err := os.Lstat(path)
+	return err == nil && st.Mode().IsDir()
+}
+
 func readFileMust(path string) []byte {
 	d, err := ioutil.ReadFile(path)
 	must(err)

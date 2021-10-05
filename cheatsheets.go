@@ -17,7 +17,7 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-const csDir = "."
+const csDir = "cheatsheets"
 const csTmplDir = "www"
 const alpineURL = "//unpkg.com/alpinejs@3.4.2/dist/cdn.min.js"
 

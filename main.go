@@ -8,9 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/kjk/cheatsheets/pkg/server"
 )
 
-func buildContentCheatsheets() []Handler {
+const (
+	dirWwwGenerated = "www_generated"
+)
+
+func buildContentCheatsheets() []server.Handler {
 	cheatsheets := readCheatSheets()
 	csFindByURL := func(uri string) *cheatSheet {
 		// match /cheatsheet/go.html => go
@@ -82,12 +88,12 @@ func buildContentCheatsheets() []Handler {
 	csIndexURLS := func() []string {
 		return []string{"/index.html"}
 	}
-	csIndexDynamic := NewDynamicHandler(csIndexMatches, csIndexURLS)
-	csDynamic := NewDynamicHandler(csMatches, csURLS)
-	return []Handler{csIndexDynamic, csDynamic}
+	csIndexDynamic := server.NewDynamicHandler(csIndexMatches, csIndexURLS)
+	csDynamic := server.NewDynamicHandler(csMatches, csURLS)
+	return []server.Handler{csIndexDynamic, csDynamic}
 }
 
-func buildServerFiles() *ServerConfig {
+func buildServerDynamic() *server.Server {
 	staticFiles := []string{
 		"/s/cheatsheet.css",
 		"cheatsheet.css",
@@ -102,22 +108,38 @@ func buildServerFiles() *ServerConfig {
 		name := staticFiles[i+1]
 		staticFiles[i+1] = filepath.Join("www", name)
 	}
-	h := NewFilesHandler(staticFiles...)
-	handlers := []Handler{h}
+	h := server.NewFilesHandler(staticFiles...)
+	handlers := []server.Handler{h}
 	cheatsheets := buildContentCheatsheets()
 	handlers = append(handlers, cheatsheets...)
 
-	return &ServerConfig{
+	return &server.Server{
 		Handlers:  handlers,
 		CleanURLS: true,
 		Port:      9033,
 	}
 }
 
-func runServer() {
+func runServerDynamic() {
 	printLoggingStats()
-	logf(ctx(), "runServer starting\n")
-	waitFn := StartServer(buildServerFiles())
+	logf(ctx(), "runServerDynamic starting\n")
+
+	srv := buildServerDynamic()
+	waitFn := StartServer(srv)
+	waitFn()
+}
+
+func runServerStatic() {
+	printLoggingStats()
+	logf(ctx(), "runServerStatic starting\n")
+	panicIf(!dirExists(dirWwwGenerated))
+	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
+	srv := &server.Server{
+		Handlers:  []server.Handler{h},
+		CleanURLS: true,
+		Port:      9033,
+	}
+	waitFn := StartServer(srv)
 	waitFn()
 }
 
@@ -126,8 +148,8 @@ func generateStatic() {
 	defer func() {
 		logf(ctx(), "generateStatic() finished in %s\n", formatDuration(time.Since(timeStart)))
 	}()
-	sf := buildServerFiles()
-	WriteServerFilesToDir("www_generated", sf.Handlers)
+	srv := buildServerDynamic()
+	WriteServerFilesToDir(dirWwwGenerated, srv.Handlers)
 }
 
 func deployToRender() {
@@ -140,24 +162,34 @@ func deployToRender() {
 
 func main() {
 	var (
-		flgRunServer bool
-		flgGen       bool
-		flgDeploy    bool
+		flgRunServer       bool
+		flgRunServerStatic bool
+		flgGen             bool
+		flgDeploy          bool
 	)
 	{
 		flag.BoolVar(&flgRunServer, "run", false, "run dev server")
+		flag.BoolVar(&flgRunServerStatic, "run-static", false, "run prod server serving www_generated")
 		flag.BoolVar(&flgGen, "gen", false, "generate static files in www_generated dir")
 		flag.BoolVar(&flgDeploy, "deploy", false, "deploy to render.com")
 		flag.Parse()
 	}
+
 	if flgRunServer {
-		runServer()
+		runServerDynamic()
 		return
 	}
+
+	if flgRunServerStatic {
+		runServerStatic()
+		return
+	}
+
 	if flgGen {
 		generateStatic()
 		return
 	}
+
 	if flgDeploy {
 		deployToRender()
 		return
