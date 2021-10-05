@@ -106,7 +106,7 @@ func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
 		}
 		nFiles++
 	}
-	server.IterHandlers(handlers, writeFile)
+	server.IterContent(handlers, writeFile)
 	return nFiles, totalSize
 }
 ```
@@ -140,7 +140,7 @@ func WriteServerFilesToZip(handlers []server.Handler) int {
 		}
 		nFiles++
 	}
-	server.IterHandlers(handlers, writeFile)
+	server.IterContent(handlers, writeFile)
 	return nFiles
 }
 ```

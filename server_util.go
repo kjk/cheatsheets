@@ -40,13 +40,18 @@ func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
 		}
 		nFiles++
 	}
-	server.IterHandlers(handlers, writeFile)
+	server.IterContent(handlers, writeFile)
 	return nFiles, totalSize
+}
+
+func logHTTPReq(r *http.Request, code int, dur time.Duration) {
+	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+	// TODO: write to siser
 }
 
 func MakeHTTPServer(srv *server.Server) *http.Server {
 	panicIf(srv == nil, "must provide files")
-	httpPort := 8080
+	httpPort := 9210
 	if srv.Port != 0 {
 		httpPort = srv.Port
 	}
@@ -54,11 +59,38 @@ func MakeHTTPServer(srv *server.Server) *http.Server {
 	if isWindows() {
 		httpAddr = "localhost" + httpAddr
 	}
+
+	mainHandler := func(w http.ResponseWriter, r *http.Request) {
+		timeStart := time.Now()
+		defer func() {
+			if p := recover(); p != nil {
+				logf(ctx(), "mainHandler: panicked with with %v\n", p)
+				http.Error(w, fmt.Sprintf("Error: %v", r), http.StatusInternalServerError)
+				logHTTPReq(r, http.StatusInternalServerError, time.Since(timeStart))
+			}
+		}()
+		uri := r.URL.Path
+		serve, _ := srv.FindHandler(uri)
+		if serve == nil {
+			http.NotFound(w, r)
+			logHTTPReq(r, http.StatusNotFound, time.Since(timeStart))
+			return
+		}
+		if serve != nil {
+			cw := server.CodeCaptureWriter{ResponseWriter: w}
+			serve(&cw, r)
+			logHTTPReq(r, cw.StatusCode, time.Since(timeStart))
+			return
+		}
+		http.NotFound(w, r)
+		logHTTPReq(r, http.StatusNotFound, time.Since(timeStart))
+	}
+
 	httpSrv := &http.Server{
 		ReadTimeout:  120 * time.Second,
 		WriteTimeout: 120 * time.Second,
 		IdleTimeout:  120 * time.Second, // introduced in Go 1.8
-		Handler:      srv,
+		Handler:      http.HandlerFunc(mainHandler),
 	}
 	httpSrv.Addr = httpAddr
 	return httpSrv

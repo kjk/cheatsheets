@@ -70,7 +70,7 @@ func fileExists(path string) bool {
 	return err == nil && st.Mode().IsRegular()
 }
 
-// FileWriter implements http.ResponseWriter interface for writing to a file
+// FileWriter implements http.ResponseWriter interface for writing to a io.Writer
 type FileWriter struct {
 	w      io.Writer
 	header http.Header
@@ -171,8 +171,7 @@ func (h *FilesHandler) AddFilesInDir(dir string, uriPrefix string, files []strin
 
 func (h *FilesHandler) Get(url string) func(w http.ResponseWriter, r *http.Request) {
 	for uri, path := range h.files {
-		// urls are case-insensitive
-		// TODO: are they?
+		// we consider URLs case-insensitive
 		if strings.EqualFold(uri, url) {
 			return makeServeFile(path)
 		}
@@ -256,40 +255,6 @@ func NewDirHandler(dir string, urlPrefix string, acceptFile func(string) bool) *
 	}
 }
 
-type ContentHandler struct {
-	files map[string][]byte
-}
-
-func (h *ContentHandler) Get(uri string) func(http.ResponseWriter, *http.Request) {
-	for u, body := range h.files {
-		if uri == u {
-			return makeServeContent(uri, body)
-		}
-	}
-	return nil
-}
-
-func (h *ContentHandler) URLS() []string {
-	urls := []string{}
-	for u := range h.files {
-		urls = append(urls, u)
-	}
-	return urls
-}
-
-func (h *ContentHandler) Add(uri string, body []byte) {
-	panicIfAbsoluteURL(uri)
-	h.files[uri] = body
-}
-
-func NewContentHandler(uri string, d []byte) *ContentHandler {
-	h := &ContentHandler{
-		files: map[string][]byte{},
-	}
-	h.Add(uri, d)
-	return h
-}
-
 type DynamicHandler struct {
 	get  GetHandlerFunc
 	urls func() []string
@@ -331,25 +296,24 @@ func (h *InMemoryFilesHandler) URLS() []string {
 	return urls
 }
 
-func NewInMemoryFilesHandler(files map[string][]byte) *InMemoryFilesHandler {
-	for path, d := range files {
-		newp := strings.Replace(path, "\\", "/", -1)
-		if !strings.HasPrefix(newp, "/") {
-			newp = "/" + newp
-		}
-		if path == newp {
-			continue
-		}
-		files[newp] = d
-		delete(files, path)
-	}
-
-	return &InMemoryFilesHandler{
-		files: files,
-	}
+func (h *InMemoryFilesHandler) Add(uri string, body []byte) {
+	panicIfAbsoluteURL(uri)
+	// in case uri is a windows path, convert to unix path
+	uri = strings.Replace(uri, "\\", "/", -1)
+	panicIf(!strings.HasPrefix(uri, "/"))
+	h.files[uri] = body
 }
 
-func IterHandlers(handlers []Handler, fn func(uri string, d []byte)) {
+func NewInMemoryFilesHandler(uri string, d []byte) *InMemoryFilesHandler {
+	h := &InMemoryFilesHandler{
+		files: map[string][]byte{},
+	}
+	h.Add(uri, d)
+	return h
+}
+
+// IterContent calls a function for every url and its content
+func IterContent(handlers []Handler, fn func(uri string, d []byte)) {
 	var buf bytes.Buffer
 	for _, h := range handlers {
 		urls := h.URLS()
@@ -361,17 +325,18 @@ func IterHandlers(handlers []Handler, fn func(uri string, d []byte)) {
 			serve := h.Get(uri)
 			panicIf(serve == nil, "must have a handler for '%s'", uri)
 			serve(fw, nil)
+			fn(uri, buf.Bytes())
 		}
 	}
 }
 
 type CodeCaptureWriter struct {
 	http.ResponseWriter
-	statusCode int
+	StatusCode int
 }
 
 func (w *CodeCaptureWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
+	w.StatusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
@@ -393,58 +358,60 @@ func commonExt(uri string) bool {
 	return false
 }
 
-func gen404Candidates(uri string) []string {
-	parts := strings.Split(uri, "/")
-	n := len(parts)
-	for n > 0 {
-		n = len(parts) - 1
-		if parts[n] != "" {
-			break
-		}
-		parts = parts[:n]
+const (
+	html404 = "/404.html"
+)
+
+func Gen404Candidates(uri string) []string {
+	idx := strings.LastIndex(uri, "/")
+	if idx == -1 || idx == 0 {
+		return []string{html404}
 	}
+
 	var res []string
-	for len(parts) > 0 {
-		s := strings.Join(parts, "/") + "/404.html"
-		res = append(res, s)
-		parts = parts[:len(parts)-1]
+	rest := uri
+	for idx >= 0 {
+		last := rest[idx:]
+		if last != "/" && !commonExt(last) {
+			res = append(res, path.Join(rest, html404))
+		}
+		rest = rest[:idx]
+		idx = strings.LastIndex(rest, "/")
 	}
-	res = append(res, "/404.html")
+	res = append(res, html404)
 	return res
 }
 
-func (s *Server) FindHandler(uri string) HandlerFunc {
+func (s *Server) FindHandler(uri string) (HandlerFunc, bool) {
+	if strings.HasSuffix(uri, "/") {
+		uri = path.Join(uri, "/index.html")
+	}
 	if h := s.FindHandlerExact(uri); h != nil {
-		return h
+		return h, false
 	}
 	// if we support clean urls, try find "/foo.html" for "/foo"
 	if s.CleanURLS && !commonExt(uri) {
 		if h := s.FindHandlerExact(uri + ".html"); h != nil {
-			return h
+			return h, false
 		}
 	}
 	// try 404.html
-	a := gen404Candidates(uri)
+	a := Gen404Candidates(uri)
 	for _, uri404 := range a {
 		if h := s.FindHandlerExact(uri404); h != nil {
-			return h
+			return h, true
 		}
 	}
-	return nil
+	return nil, false
 }
 
+// don't really use it
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	uri := r.URL.Path
-	if strings.HasSuffix(uri, "/") {
-		uri = "/index.html"
-	}
-	serve := s.FindHandler(uri)
+	serve, _ := s.FindHandler(uri)
 	if serve != nil {
-		cw := CodeCaptureWriter{ResponseWriter: w}
-		serve(&cw, r)
-		//logreq(r, cw.statusCode)
+		serve(w, r)
 		return
 	}
 	http.NotFound(w, r)
-	//logreq(r, http.StatusNotFound)
 }

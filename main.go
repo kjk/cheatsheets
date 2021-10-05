@@ -149,6 +149,7 @@ func generateStatic() {
 		logf(ctx(), "generateStatic() finished in %s\n", formatDuration(time.Since(timeStart)))
 	}()
 	srv := buildServerDynamic()
+	must(os.RemoveAll(dirWwwGenerated))
 	WriteServerFilesToDir(dirWwwGenerated, srv.Handlers)
 }
 
