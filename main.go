@@ -134,6 +134,7 @@ func runServerStatic() {
 	logf(ctx(), "runServerStatic starting\n")
 	panicIf(!dirExists(dirWwwGenerated))
 	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
+	logf(ctx(), "  %d urls\n", len(h.URLS()))
 	srv := &server.Server{
 		Handlers:  []server.Handler{h},
 		CleanURLS: true,

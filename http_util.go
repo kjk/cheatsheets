@@ -76,8 +76,8 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 }
 
 func MakeHTTPServer(srv *server.Server) *http.Server {
-	panicIf(srv == nil, "must provide files")
-	httpPort := 9210
+	panicIf(srv == nil, "must provide srv")
+	httpPort := 8080
 	if srv.Port != 0 {
 		httpPort = srv.Port
 	}
@@ -87,12 +87,14 @@ func MakeHTTPServer(srv *server.Server) *http.Server {
 	}
 
 	mainHandler := func(w http.ResponseWriter, r *http.Request) {
+		logf(ctx(), "mainHandler: '%s'\n", r.RequestURI)
 		timeStart := time.Now()
 		defer func() {
 			if p := recover(); p != nil {
 				logf(ctx(), "mainHandler: panicked with with %v\n", p)
 				http.Error(w, fmt.Sprintf("Error: %v", r), http.StatusInternalServerError)
 				logHTTPReq(r, http.StatusInternalServerError, 0, time.Since(timeStart))
+				panic(p)
 			}
 		}()
 		uri := r.URL.Path
