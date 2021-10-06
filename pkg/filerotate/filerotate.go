@@ -131,7 +131,7 @@ func (f *File) open(path string) error {
 
 func (f *File) reopenIfNeeded() error {
 	now := time.Now()
-	newPath := f.config.PathIfShouldRotate(now, f.creationTime)
+	newPath := f.config.PathIfShouldRotate(f.creationTime, now)
 	if newPath == "" {
 		return nil
 	}

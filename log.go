@@ -76,7 +76,7 @@ func remotePathFromFilePath(path string) string {
 // upload httplog-2021-10-06_01.txt as
 // apps/cheatsheet/httplog/2021/10-06/2021-10-06_01.txt.br
 func uploadCompressedHTTPLog(path string) {
-	logf(ctx(), "uploadCompressedHTTPLog")
+	logf(ctx(), "uploadCompressedHTTPLog\n")
 	pathBr := path + ".br"
 	createCompressed := func() error {
 		r, err := os.Open(path)
@@ -118,7 +118,7 @@ func uploadCompressedHTTPLog(path string) {
 	timeStart = time.Now()
 	mc := newMinioSpacesClient()
 	remotePath := remotePathFromFilePath(pathBr)
-	if remotePath != "" {
+	if remotePath == "" {
 		logf(ctx(), "uploadCompressedHTTPLog: remotePathFromFilePath() failed for '%s'\n", pathBr)
 		return
 	}
@@ -145,7 +145,9 @@ func NewLogHourly(dir string, didClose func(path string, didRotate bool)) (*file
 			return ""
 		}
 		name := "httplog-" + now.Format("2006-01-02_15") + ".txt"
-		return filepath.Join(dir, name)
+		path := filepath.Join(dir, name)
+		logf(ctx(), "NewLogHourly: '%s'\n", path)
+		return path
 	}
 	config := filerotate.Config{
 		DidClose:           didClose,
@@ -323,6 +325,25 @@ func shouldLogHeader(s string) bool {
 
 func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+
+	uri := r.URL.Path
+	shouldLogURL := func() bool {
+		// we don't want to do deatiled logging for all files, to make
+		// the log files smaller
+		ext := strings.ToLower(filepath.Ext(uri))
+		switch ext {
+		case ".css", ".js", ".ico":
+			return false
+		}
+		if strings.HasPrefix(uri, "/ping") {
+			// our internal health monitoring endpoint
+			return false
+		}
+		return true
+	}
+	if !shouldLogURL() {
+		return
+	}
 
 	httpLogMu.Lock()
 	defer httpLogMu.Unlock()
