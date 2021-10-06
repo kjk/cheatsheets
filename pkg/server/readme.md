@@ -112,7 +112,7 @@ func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
 ```
 
 ```go
-func WriteServerFilesToZip(handlers []server.Handler) int {
+func WriteServerFilesToZip(handlers []server.Handler) ([]byte, error) {
 	nFiles := 0
 
 	var buf bytes.Buffer
@@ -130,10 +130,16 @@ func WriteServerFilesToZip(handlers []server.Handler) int {
 		return err
 	}
 
+	var err error
 	writeFile := func(uri string, d []byte) {
+		if err != nil {
+			return
+		}
 		name := strings.TrimPrefix(uri, "/")
-		err := zipWriteFile(zw, name, d)
-		must(err)
+		err = zipWriteFile(zw, name, d)
+		if err != nil {
+			return
+		}
 		sizeStr := formatSize(int64(len(d)))
 		if nFiles%128 == 0 {
 			logf(ctx(), "WriteServerFilesToZip: %d file '%s' of size %s\n", nFiles+1, name, sizeStr)
@@ -141,8 +147,13 @@ func WriteServerFilesToZip(handlers []server.Handler) int {
 		nFiles++
 	}
 	server.IterContent(handlers, writeFile)
-	return nFiles
+
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
+
 ```
 
 Utility functions used above:
