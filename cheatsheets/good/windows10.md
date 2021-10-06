@@ -92,31 +92,31 @@ Open the application’s menu on the task bar | `Alt + Windows key + number keys
 
 Action | Shortcut 
 ------ | --------
-Open the File Explorer | Win + E
-Open the search box  | Ctrl + E
-Open the current window in a new window | Ctrl + N
-Close active window | Ctrl + W
-Start the mark mode | Ctrl + M
-Change the file and folder view | Ctrl + Mouse Scroll
-Switch between left and right panes | F6
-Create a new folder | Ctrl + Shift + N
-Expand all subfolders in the navigation pane on the left | Ctrl + Shift + E
-Select address bar | Alt + D
-Changes folder view | Ctrl + Shift + Number (1-8)
-Display the preview panel | Alt + P
-Open the Properties settings for the selected item | Alt + Enter
-Expand the selected drive or folder | Num Lock + plus (+)
-Collapse the selected drive or folder | Num Lock + minus (-)
-Expand all the subfolders under the selected drive or folder | Num Lock + asterisk (*)
-Go the next folder | Alt + Right arrow
-Go the previous folder | Alt + Left arrow (or Backspace)
-Go to the parent folder the folder was in | Alt + Up arrow
-Switch focus to address bar | F4
-Refresh the File Explorer | F5
-Expand the current folder tree or select the first subfolder (if it’s expanded) in the left pane | Right Arrow key
-Collapse the current folder tree or select the parent folder (if it’s collapsed) in the left pane | Left Arrow Key
-Move to the top of the active window | Home
-Move to the bottom of the active window | End
+Open the File Explorer | `Win + E`
+Open the search box | `Ctrl + E`
+Open the current window in a new window | `Ctrl + N`
+Close active window | `Ctrl + W`
+Start the mark mode | `Ctrl + M`
+Change the file and folder view | `Ctrl + Mouse Scroll`
+Switch between left and right panes | `F6`
+Create a new folder | `Ctrl + Shift + N`
+Expand all subfolders in the navigation pane on the left | `Ctrl + Shift + E`
+Select address bar | `Alt + D`
+Changes folder view | `Ctrl + Shift + Number (1-8)`
+Display the preview panel | `Alt + P`
+Open the Properties settings for the selected item | `Alt + Enter`
+Expand the selected drive or folder | `Num Lock + plus (+)`
+Collapse the selected drive or folder | `Num Lock + minus (-)`
+Expand all the subfolders under the selected drive or folder | `Num Lock + asterisk (*)`
+Go the next folder | `Alt + Right arrow`
+Go the previous folder | `Alt + Left arrow (or Backspace)`
+Go to the parent folder the folder was in | `Alt + Up arrow`
+Switch focus to address bar | `F4`
+Refresh the File Explorer | `F5`
+Expand the current folder tree or select the first subfolder (if it’s expanded) in the left pane | `Right Arrow key`
+Collapse the current folder tree or select the parent folder (if it’s collapsed) in the left pane | `Left Arrow Key`
+Move to the top of the active window | `Home`
+Move to the bottom of the active window | `End`
 
 # Command Prompt
 
@@ -124,89 +124,89 @@ Shortuct for Command Prompt (cmd) window.
 
 Action | Shortcut 
 ------ | --------
-Scroll to the top | Ctrl + Home
-Scroll to the bottom | Ctrl + End
-Select everything on the current line | Ctrl + A
-Move the cursor up a page | Page Up
-Move the cursor down a page | Page Down
-Enter Mark mode | Ctrl + M
-Move the cursor to the beginning of the buffer | Ctrl + Home (in Mark mode)
-Move the cursor to the end of the buffer | Ctrl + End (in Mark mode)
-Cycle through command history of active session | Up or Down arrow keys
-Move cursor left or right in the current line | Left or Right arrow keys
-Move your cursor to the start of the current line | Shift + Home
-Move your cursor to the end of the current line | Shift + End
-Move cursor up one screen and select text | Shift + Page Up
-Move cursor down one screen and select text | Shift + Page Down
-Move the screen up one line in the output history | Ctrl + Up arrow
-Move the screen down one line in the output history | Ctrl + Down arrow
-Move cursor up one line and select the text | Shift + Up 
-Move cursor down one line and select the text | Shift + Down
-Move the cursor one word at a time | Ctrl + Shift + Arrow Keys
-Open search | Ctrl + F
+Scroll to the top | `Ctrl + Home`
+Scroll to the bottom | `Ctrl + End`
+Select everything on the current line |` Ctrl + A`
+Move the cursor up a page | `Page Up`
+Move the cursor down a page | `Page Down`
+Enter Mark mode | `Ctrl + M`
+Move the cursor to the beginning of the buffer | `Ctrl + Home` (in Mark mode)
+Move the cursor to the end of the buffer |` Ctrl + End` (in Mark mode)
+Cycle through command history of active session | `Up` or `Down` arrow keys
+Move cursor left or right in the current line | `Left` or `Right` arrow keys
+Move your cursor to the start of the current line |` Shift + Home`
+Move your cursor to the end of the current line | `Shift + End`
+Move cursor up one screen and select text | `Shift + Page Up`
+Move cursor down one screen and select text | `Shift + Page Down`
+Move the screen up one line in the output history | `Ctrl + Up arrow`
+Move the screen down one line in the output history | `Ctrl + Down arrow`
+Move cursor up one line and select the text | `Shift + Up`
+Move cursor down one line and select the text | `Shift + Down`
+Move the cursor one word at a time | `Ctrl + Shift + Arrow Keys`
+Open search | `Ctrl + F`
 
 # Dialog box
 
 Action | Shortcut 
 ------ | --------
-Move forward through tabs | Ctrl + Tab
-Move back through tabs | Ctrl + Shift + Tab
-Switch to nth tab | Ctrl + N (number 1–9)
-Show the items in the active list | F4
-Move forward through options of the dialog box | Tab
-Move back through options of the dialog box | Shift + Tab
-Execute the command (or select the option) that is used with the underlined letter | Alt + underlined letter
-Check or Uncheck the check box if the active option is a check box | Spacebar
-Select or move to a button in a group of active buttons | Arrow keys
-Open the parent folder if a folder is selected in the Open or Save As dialog box | Backspace
+Move forward through tabs | `Ctrl + Tab`
+Move back through tabs | `Ctrl + Shift + Tab`
+Switch to nth tab | `Ctrl + N` (number 1–9)
+Show the items in the active list | `F4`
+Move forward through options of the dialog box | `Tab`
+Move back through options of the dialog box | `Shift + Tab`
+Execute the command (or select the option) that is used with the underlined letter |` Alt + underlined letter`
+Check or Uncheck the check box if the active option is a check box | `Spacebar`
+Select or move to a button in a group of active buttons | `Arrow keys`
+Open the parent folder if a folder is selected in the Open or Save As dialog box | `Backspace`
 
 # Accessibility 
 
 Action | Shortcut 
 ------ | --------
-Open Ease of Access Centre | Win + U
-Turn on Magnifier and Zoom in | Win + plus (+) 
-Zoom out using Magnifier | Win + minus (-) 
-Exit Magnifier | Win + Esc
-Switch to docked mode in Magnifier | Ctrl + Alt + D
-Switch to full-screen mode in Magnifier | Ctrl + Alt + F
-Switch to lens mode in Magnifier | Ctrl + Alt + L
-Invert colors in Magnifier | Ctrl + Alt + I
-Cycle through views in Magnifier | Ctrl + Alt + M
-Resize the lens with the mouse in Magnifier. | Ctrl + Alt + R
-Pan in the direction of the arrow keys in Magnifier. | Ctrl + Alt + arrow keys
-Zoom in or out using mouse | Ctrl + Alt + mouse scroll
-Open Narrator | Win + Enter
-Open on-screen keyboard | Win + Ctrl + O
-Turn Filter Keys on and off	 | Press Right Shift for eight seconds
-Turn High Contrast on or off | Left Alt + left Shift + PrtSc
-Turn Mouse Keys on or off	 | Left Alt + left Shift + Num Lock
-Turn Sticky Keys on or off | Press Shift five times
-Turn Toggle Keys on or off | Press Num Lock for five seconds
-Open Action Center | Win + A
+Open Ease of Access Centre | `Win + U`
+Turn on Magnifier and Zoom in | `Win + plus (+) `
+Zoom out using Magnifier | `Win + minus (-) `
+Exit Magnifier |` Win + Esc`
+Switch to docked mode in Magnifier | `Ctrl + Alt + D`
+Switch to full-screen mode in Magnifier | `Ctrl + Alt + F`
+Switch to lens mode in Magnifier | `Ctrl + Alt + L`
+Invert colors in Magnifier | `Ctrl + Alt + I`
+Cycle through views in Magnifier | `Ctrl + Alt + M`
+Resize the lens with the mouse in Magnifier | `Ctrl + Alt + R`
+Pan in the direction of the arrow keys in Magnifier | `Ctrl + Alt + arrow keys`
+Zoom in or out using mouse | `Ctrl + Alt + mouse scroll`
+Open Narrator | `Win + Enter`
+Open on-screen keyboard | `Win + Ctrl + O`
+Turn Filter Keys on and off	 | `Press Right Shift for eight seconds`
+Turn High Contrast on or off | `Left Alt + left Shift + PrtSc`
+Turn Mouse Keys on or off	 | `Left Alt + left Shift + Num Lock`
+Turn Sticky Keys on or off | `Press Shift five times`
+Turn Toggle Keys on or off | `Press Num Lock for five seconds`
+Open Action Center | `Win + A`
 
 # Other
 
 Action | Shortcut 
 ------ | --------
-Open Game bar | Win + G
-Record the last 30 seconds of the active game | Win + Alt + G
-Start or stop recording the active game | Win + Alt + R
-Take a screenshot of the active game | Win + Alt + PrtSc
-Show/hide recording timer of the game | Win + Alt + T
-Start IME reconversion | Win + forward slash (/)
-Open Feedback Hub | Win + F
-Launch Voice Typing | Win + H
-Open the Connect quick setting | Win + K
-Lock your device orientation | Win + O
-Display the System Properties Page | Win + Pause
-Search for PCs (if you’re on a network) | Win + Ctrl + F
-Move an app or window from one monitor to another | Win + Shift + Left or Right arrow key
-Switch input language and keyboard layout | Win + Spacebar
-Open Clipboard History | Win + V
-Switch input between Windows Mixed Reality and your desktop. | Win + Y
-Launch Cortana app | Win + C
-Open another instance of the app pinned to the taskbar in the number position. | Win + Shift + Number key (0-9)
-Switch to the last active window of the app pinned to the taskbar in the number position. | Win + Ctrl + Number key (0-9)
-Open Jump List of the app pinned to the taskbar in the number position. | Win + Alt + Number key (0-9)
-Open another instance as an administrator of the app pinned to the taskbar in the number position. | Win + Ctrl + Shift + Number key (0-9)
+Open Game bar | `Win + G`
+Record the last 30 seconds of the active game | `Win + Alt + G`
+Start or stop recording the active game | `Win + Alt + R`
+Take a screenshot of the active game | `Win + Alt + PrtSc`
+Show/hide recording timer of the game | `Win + Alt + T`
+Start IME reconversion | `Win + forward slash (/)`
+Open Feedback Hub | `Win + F`
+Launch Voice Typing | `Win + H`
+Open the Connect quick setting | `Win + K`
+Lock your device orientation | `Win + O`
+Display the System Properties Page | `Win + Pause`
+Search for PCs (if you’re on a network) | `Win + Ctrl + F`
+Move an app or window from one monitor to another | `Win + Shift + Left` or `Right arrow` key
+Switch input language and keyboard layout | `Win + Spacebar`
+Open Clipboard History | `Win + V`
+Switch input between Windows Mixed Reality and your desktop |` Win + Y`
+Launch Cortana app | `Win + C`
+Open another instance of the app pinned to the taskbar in the number position | `Win + Shift + Number` (0-9)
+Switch to the last active window of the app pinned to the taskbar in the number position | `Win + Ctrl + Number` key (0-9)
+Open Jump List of the app pinned to the taskbar in the number position | `Win + Alt + Number` (0-9)
+Open another instance as an administrator of the app pinned to the taskbar in the number position | `Win + Ctrl + Shift + Number` (0-9)
