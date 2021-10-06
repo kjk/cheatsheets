@@ -22,7 +22,7 @@ type File struct {
 
 	creationTime time.Time
 
-	Location *time.Location
+	//Location *time.Location
 
 	config Config
 	file   *os.File
@@ -99,9 +99,19 @@ func (f *File) close(didRotate bool) error {
 	return err
 }
 
+/*
+func nowInMaybeLocation(loc *time.Location) time.Time {
+	now := time.Now()
+	if loc != nil {
+		now = now.In(loc)
+	}
+	return now
+}
+*/
+
 func (f *File) open(path string) error {
 	f.Path = path
-
+	f.creationTime = time.Now()
 	// we can't assume that the dir for the file already exists
 	dir := filepath.Dir(f.Path)
 	err := os.MkdirAll(dir, 0755)
@@ -121,9 +131,6 @@ func (f *File) open(path string) error {
 
 func (f *File) reopenIfNeeded() error {
 	now := time.Now()
-	if f.Location != nil {
-		now = now.In(f.Location)
-	}
 	newPath := f.config.PathIfShouldRotate(now, f.creationTime)
 	if newPath == "" {
 		return nil
