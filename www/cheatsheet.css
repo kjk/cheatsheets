@@ -45,7 +45,7 @@ h2 {
 
 .topnav {
     margin: 0.5em 0;
-    padding: 0 4px;
+    padding: 0;
 }
 
 .edit {
@@ -251,6 +251,10 @@ a:hover {
 
 .align-center {
     align-items: center;
+}
+
+.align-baseline {
+    align-items: baseline;
 }
 
 .justify-center {

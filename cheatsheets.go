@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -20,18 +20,6 @@ import (
 const csDir = "cheatsheets"
 const csTmplDir = "www"
 const alpineURL = "//unpkg.com/alpinejs@3.4.2/dist/cdn.min.js"
-
-var (
-	limitCheatsheets = false
-
-	whitelist = []string{"python3", "go"}
-)
-
-func init() {
-	if !limitCheatsheets {
-		whitelist = nil
-	}
-}
 
 func newCsMarkdownParser() *parser.Parser {
 	extensions := parser.NoIntraEmphasis |
@@ -236,6 +224,7 @@ type cheatSheet struct {
 	md         []byte
 	meta       map[string]string
 	Title      string
+	inMain     bool // if true shown in /index.html, if false only in /all.html
 }
 
 func processCheatSheet(cs *cheatSheet) {
@@ -513,63 +502,34 @@ func readCheatSheets() []*cheatSheet {
 	logvf(ctx(), "readCheatSheets\n")
 	cheatsheets := []*cheatSheet{}
 
-	isBlacklisted := func(s string, a []string) bool {
-		s = strings.ToLower(s)
-		for _, s2 := range a {
-			if s == strings.ToLower(s2) {
-				return true
+	readFromDir := func() {
+		filepath.WalkDir(csDir, func(path string, f fs.DirEntry, err error) error {
+			if err != nil {
+				return nil
 			}
-		}
-		return false
-	}
-
-	isWhitelisted := func(s string, a []string) bool {
-		if a == nil {
-			return true
-		}
-		s = strings.ToLower(s)
-		for _, s2 := range a {
-			if s == strings.ToLower(s2) {
-				return true
-			}
-		}
-		return false
-	}
-
-	readFromDir := func(subDir string, blacklist []string, whitelist []string) {
-		dir := filepath.Join(csDir, subDir)
-		files, err := os.ReadDir(dir)
-		must(err)
-		for _, f := range files {
 			if f.IsDir() {
-				continue
+				return nil
 			}
 			name := f.Name()
 			if filepath.Ext(name) != ".md" {
-				continue
+				return nil
 			}
 			baseName := strings.Split(name, ".")[0]
-			if isBlacklisted(baseName, blacklist) {
-				//logf("blacklisted %s\n", f.Name())
-				continue
-			}
-			if !isWhitelisted(baseName, whitelist) {
-				//logf("!whitelisted %s\n", f.Name())
-				continue
-			}
 			cs := &cheatSheet{
 				fileNameBase: baseName,
-				mdPath:       filepath.Join(dir, name),
-				mdFileName:   filepath.Join(subDir, name),
+				mdPath:       path,
+				mdFileName:   path, // TODO: something else?
 				meta:         map[string]string{},
+				inMain:       strings.Contains(path, "good"),
 			}
+
 			//logf("%s\n", cs.mdPath)
 			cheatsheets = append(cheatsheets, cs)
-		}
+			return nil
+		})
 	}
 
-	//readFromDir("devhints", nil, whitelist)
-	readFromDir("good", nil, whitelist)
+	readFromDir()
 
 	{
 		// uniquify names

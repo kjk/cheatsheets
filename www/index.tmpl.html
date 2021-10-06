@@ -147,6 +147,8 @@
                     event.preventDefault();
                 }
             });
+             // this prevents temporary flashing since we change the html
+             document.body.removeAttribute("x-temp-cloak");           
         }
     </script>
     <style>
@@ -170,8 +172,8 @@
     </style>
 </head>
 
-<body onload="start()">
-    <div class="flex flex-row align-center justify-space-between topnav">
+<body x-temp-cloak onload="start()">
+    <div class="flex flex-row align-baseline justify-space-between topnav">
         <div><a href="https://blog.kowalczyk.info/contactme.html" target="_blank">contact</a></div>
         <div class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
         term: '',

@@ -71,12 +71,25 @@ func buildContentCheatsheets() []server.Handler {
 	}
 
 	csIndexMatches := func(uri string) func(w http.ResponseWriter, r *http.Request) {
-		if uri != "/index.html" {
+		switch uri {
+		case "/index.html", "/all.html":
+			// no-op
+		default:
 			return nil
 		}
+		all := uri == "/all.html"
 		send := func(w http.ResponseWriter, r *http.Request) {
 			logf(ctx(), "csIndexSend: '%s'\n", uri)
-			html := []byte(genIndexHTML(cheatsheets))
+			a := cheatsheets
+			if !all {
+				a = nil
+				for _, cs := range cheatsheets {
+					if cs.inMain {
+						a = append(a, cs)
+					}
+				}
+			}
+			html := []byte(genIndexHTML(a))
 			if r == nil {
 				w.Write(html)
 				return
@@ -87,7 +100,7 @@ func buildContentCheatsheets() []server.Handler {
 		return send
 	}
 	csIndexURLS := func() []string {
-		return []string{"/index.html"}
+		return []string{"/index.html", "/all.html"}
 	}
 	csIndexDynamic := server.NewDynamicHandler(csIndexMatches, csIndexURLS)
 	csDynamic := server.NewDynamicHandler(csMatches, csURLS)
