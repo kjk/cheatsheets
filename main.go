@@ -186,6 +186,11 @@ func main() {
 		flag.Parse()
 	}
 
+	if false {
+		compareCompr()
+		return
+	}
+
 	if flgRunServer {
 		runServerDynamic()
 		return
