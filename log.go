@@ -233,8 +233,14 @@ func shouldLogHeader(s string) bool {
 
 func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+
 	httpLogMu.Lock()
 	defer httpLogMu.Unlock()
+
+	if httpLogSiser == nil {
+		return
+	}
+
 	rec := &httpLogRec
 	rec.Reset()
 	rec.Write("req", fmt.Sprintf("%s %s %d", r.Method, r.RequestURI, code))
@@ -248,11 +254,13 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 		if !shouldLogHeader(k) {
 			continue
 		}
-		logf(ctx(), "%s: %s\n", k, v[0])
 		if len(v) > 0 && len(v[0]) > 0 {
 			rec.Write(k, v[0])
 		}
 	}
 
-	// TODO: write to log file
+	_, err := httpLogSiser.WriteRecord(rec)
+	if err != nil {
+		logerrf(ctx(), "logHTTPReq: httpLogSiser.WriteRecord() failed with '%s'\n", err)
+	}
 }
