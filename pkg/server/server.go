@@ -145,7 +145,7 @@ func serveContent(w http.ResponseWriter, r *http.Request, uri string, d []byte) 
 	http.ServeContent(w, r, uri, time.Now(), content)
 }
 
-func makeServeContent(uri string, d []byte) func(w http.ResponseWriter, r *http.Request) {
+func MakeServeContent(uri string, d []byte) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serveContent(w, r, uri, d)
 	}
@@ -282,7 +282,7 @@ type InMemoryFilesHandler struct {
 func (h *InMemoryFilesHandler) Get(uri string) func(http.ResponseWriter, *http.Request) {
 	for path, d := range h.files {
 		if strings.EqualFold(path, uri) {
-			return makeServeContent(uri, d)
+			return MakeServeContent(uri, d)
 		}
 	}
 	return nil
