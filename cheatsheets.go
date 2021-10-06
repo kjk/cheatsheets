@@ -515,6 +515,10 @@ func readCheatSheets() []*cheatSheet {
 				return nil
 			}
 			baseName := strings.Split(name, ".")[0]
+			baseName = strings.ToLower(baseName)
+			if baseName == "readme" {
+				return nil
+			}
 			cs := &cheatSheet{
 				fileNameBase: baseName,
 				mdPath:       path,
