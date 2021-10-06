@@ -422,13 +422,18 @@
             background-color: #f0f0f0;
             cursor: pointer;
         }
+
+        .px-4px {
+            padding-left: 4px;
+            padding-right: 4px;
+        }
     </style>
 </head>
 
 <body onload="start()" x-temp-cloak>
-    <div class="flex flex-row align-center topnav">
-        <a href="/">Cheatsheets</a>
-        <div>&nbsp;/&nbsp;{{title}}</div>
+    <div class="flex flex-row align-baseline topnav px-4px">
+        <a href="/" style="font-size: 10pt">Cheatsheets</a>
+        <div style="font-size: 10pt">&nbsp;/&nbsp;{{title}}</div>
         <div class="flex-grow"></div>
         <div x-cloak class="relative" x-on:keydown="searchKeyDown(search, $event)" x-data="{ search: {
       term: '',
