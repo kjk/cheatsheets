@@ -776,34 +776,23 @@ func testDebounce() {
 ## mimeTypeFromFileName
 
 ```go
+var mimeTypes = map[string]string{
+	// not present in mime.TypeByExtension()
+	".txt": "text/plain",
+	".exe": "application/octet-stream",
+}
+
 func mimeTypeFromFileName(path string) string {
-	var mimeTypes = map[string]string{
-		// this is a list from go's mime package
-		".css":  "text/css; charset=utf-8",
-		".gif":  "image/gif",
-		".htm":  "text/html; charset=utf-8",
-		".html": "text/html; charset=utf-8",
-		".jpg":  "image/jpeg",
-		".js":   "application/javascript",
-		".wasm": "application/wasm",
-		".pdf":  "application/pdf",
-		".png":  "image/png",
-		".svg":  "image/svg+xml",
-		".xml":  "text/xml; charset=utf-8",
-
-		// those are my additions
-		".txt":  "text/plain",
-		".exe":  "application/octet-stream",
-		".json": "application/json",
-	}
-
 	ext := strings.ToLower(filepath.Ext(path))
-	mt := mimeTypes[ext]
-	if mt != "" {
-		return mt
+	ct := mimeTypes[ext]
+	if ct == "" {
+		ct = mime.TypeByExtension(ext)
 	}
-	// if not given, default to this
-	return "application/octet-stream"
+	if ct == "" {
+		// if all else fails
+		ct = "application/octet-stream"
+	}
+	return ct
 }
 ```
 

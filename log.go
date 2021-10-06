@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/andybalholm/brotli"
 	"github.com/kjk/cheatsheets/pkg/filerotate"
 	"github.com/kjk/siser"
 )
@@ -44,9 +46,97 @@ func getLogsDir() string {
 	return logsDirCached
 }
 
+// <dir>/httplog-2021-10-06_01.txt.br
+// =>
+//apps/cheatsheet/httplog/2021/10-06/2021-10-06_01.txt.br
+// return "" if <path> is in unexpected format
+func remotePathFromFilePath(path string) string {
+	name := filepath.Base(path)
+	parts := strings.Split(name, "_")
+	if len(parts) != 2 {
+		return ""
+	}
+	// parts[1]: 01.txt.br
+	hr := strings.Split(parts[1], ".")[0]
+	if len(hr) != 2 {
+		return ""
+	}
+	// parts[0]: httplog-2021-10-06
+	parts = strings.Split(parts[0], "-")
+	if len(parts) != 4 {
+		return ""
+	}
+	year := parts[1]
+	month := parts[2]
+	day := parts[3]
+	name = fmt.Sprintf("%s/%s-%s/%s-%s-%s_%s.txt.br", year, month, day, year, month, day, hr)
+	return "apps/cheatsheet/httplog/" + name
+}
+
+// upload httplog-2021-10-06_01.txt as
+// apps/cheatsheet/httplog/2021/10-06/2021-10-06_01.txt.br
+func uploadCompressedHTTPLog(path string) {
+	logf(ctx(), "uploadCompressedHTTPLog")
+	pathBr := path + ".br"
+	createCompressed := func() error {
+		r, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+		os.Remove(pathBr)
+		f, err := os.Create(pathBr)
+		if err != nil {
+			return err
+		}
+		w := brotli.NewWriterLevel(f, brotli.BestCompression)
+		_, err = io.Copy(w, r)
+		err2 := w.Close()
+		err3 := f.Close()
+		if err != nil {
+			return err
+		}
+		if err2 != nil {
+			return err2
+		}
+		return err3
+	}
+	defer os.Remove(pathBr)
+
+	timeStart := time.Now()
+	err := createCompressed()
+	if err != nil {
+		logf(ctx(), "uploadCompressedHTTPLog: createCompressed() failed with '%s'\n", err)
+		return
+	}
+	dur := time.Since(timeStart)
+	origSize := getFileSize(path)
+	comprSize := getFileSize(pathBr)
+	p := perc(origSize, comprSize)
+	logf(ctx(), "uploadCompressedHTTPLog: compressed '%s' as '%s', %s => %s (%.2f%%) in %s\n", path, pathBr, formatSize(origSize), formatSize(comprSize), p, dur)
+
+	timeStart = time.Now()
+	mc := newMinioSpacesClient()
+	remotePath := remotePathFromFilePath(pathBr)
+	if remotePath != "" {
+		logf(ctx(), "uploadCompressedHTTPLog: remotePathFromFilePath() failed for '%s'\n", pathBr)
+		return
+	}
+	err = minioUploadFilePublic(mc, remotePath, pathBr)
+	if err != nil {
+		logerrf(ctx(), "uploadCompressedHTTPLog: minioUploadFilePublic() failed with '%s'\n", err)
+		return
+	}
+	logf(ctx(), "uploadCompressedHTTPLog: uploaded '%s' as '%s' in %s\n", pathBr, remotePath, time.Since(timeStart))
+}
+
 func didRotateHTTPLog(path string, didRotate bool) {
-	// TODO: submit file to s3, delete files older than, say, 2 days
-	logf(ctx(), "didRotateHTTPLog: '%s', didRotate: %v\n", path, didRotate)
+	canUpload := hasSpacesCreds()
+	logf(ctx(), "didRotateHTTPLog: '%s', didRotate: %v, hasSpacesCreds: %v\n", path, didRotate, canUpload)
+	if !canUpload || !didRotate {
+		return
+	}
+	go uploadCompressedHTTPLog(path)
 }
 
 func NewLogHourly(dir string, didClose func(path string, didRotate bool)) (*filerotate.File, error) {

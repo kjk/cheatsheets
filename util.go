@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -185,4 +187,23 @@ func newTimeoutClient(connectTimeout time.Duration, readWriteTimeout time.Durati
 			Proxy: http.ProxyFromEnvironment,
 		},
 	}
+}
+
+var mimeTypes = map[string]string{
+	// not present in mime.TypeByExtension()
+	".txt": "text/plain",
+	".exe": "application/octet-stream",
+}
+
+func mimeTypeFromFileName(path string) string {
+	ext := strings.ToLower(filepath.Ext(path))
+	ct := mimeTypes[ext]
+	if ct == "" {
+		ct = mime.TypeByExtension(ext)
+	}
+	if ct == "" {
+		// if all else fails
+		ct = "application/octet-stream"
+	}
+	return ct
 }
