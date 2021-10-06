@@ -120,7 +120,10 @@ func (f *File) open(path string) error {
 }
 
 func (f *File) reopenIfNeeded() error {
-	now := time.Now().In(f.Location)
+	now := time.Now()
+	if f.Location != nil {
+		now = now.In(f.Location)
+	}
 	newPath := f.config.PathIfShouldRotate(now, f.creationTime)
 	if newPath == "" {
 		return nil
