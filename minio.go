@@ -146,8 +146,10 @@ func hasSpacesCreds() bool {
 
 func newMinioSpacesClient() *MinioClient {
 	bucket := "kjklogs"
+	key := os.Getenv("SPACES_KEY")
+	secret := os.Getenv("SPACES_SECRET")
 	mc, err := minio.New("nyc3.digitaloceanspaces.com", &minio.Options{
-		Creds:  credentials.NewStaticV4(os.Getenv("SPACES_KEY"), os.Getenv("SPACES_SECRET"), ""),
+		Creds:  credentials.NewStaticV4(key, secret, ""),
 		Secure: true,
 	})
 	must(err)
