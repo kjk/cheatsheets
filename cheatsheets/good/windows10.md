@@ -161,6 +161,7 @@ Select or move to a button in a group of active buttons | Arrow keys
 Open the parent folder if a folder is selected in the Open or Save As dialog box | Backspace
 
 # Accessibility 
+
 Action | Shortcut 
 ------ | --------
 Open Ease of Access Centre | Win + U
@@ -186,6 +187,8 @@ Open Action Center | Win + A
 
 # Other
 
+Action | Shortcut 
+------ | --------
 Open Game bar | Win + G
 Record the last 30 seconds of the active game | Win + Alt + G
 Start or stop recording the active game | Win + Alt + R
