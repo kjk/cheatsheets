@@ -150,11 +150,11 @@ func runServerDynamic() {
 	waitFn()
 }
 
-func runServerStatic() {
+func runServerProd() {
 	printLoggingStats()
 	panicIf(!dirExists(dirWwwGenerated))
 	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
-	logf(ctx(), "runServerStatic starting, hasSpacesCreds: %v, %d urls\n", hasSpacesCreds(), len(h.URLS()))
+	logf(ctx(), "runServerProd starting, hasSpacesCreds: %v, %d urls\n", hasSpacesCreds(), len(h.URLS()))
 	srv := &server.Server{
 		Handlers:  []server.Handler{h},
 		CleanURLS: true,
@@ -185,14 +185,14 @@ func deployToRender() {
 
 func main() {
 	var (
-		flgRunServer       bool
-		flgRunServerStatic bool
-		flgGen             bool
-		flgDeploy          bool
+		flgRunServer     bool
+		flgRunServerProd bool
+		flgGen           bool
+		flgDeploy        bool
 	)
 	{
 		flag.BoolVar(&flgRunServer, "run", false, "run dev server")
-		flag.BoolVar(&flgRunServerStatic, "run-static", false, "run prod server serving www_generated")
+		flag.BoolVar(&flgRunServerProd, "run-prod", false, "run prod server serving www_generated")
 		flag.BoolVar(&flgGen, "gen", false, "generate static files in www_generated dir")
 		flag.BoolVar(&flgDeploy, "deploy", false, "deploy to render.com")
 		flag.Parse()
@@ -208,8 +208,8 @@ func main() {
 		return
 	}
 
-	if flgRunServerStatic {
-		runServerStatic()
+	if flgRunServerProd {
+		runServerProd()
 		return
 	}
 
