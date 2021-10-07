@@ -363,8 +363,8 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	recWriteNonEmpty(rec, "host", r.Host)
 	rec.Write("ipaddr", requestGetRemoteAddress(r))
 	rec.Write("size", strconv.FormatInt(size, 10))
-	durMs := int64(dur / time.Millisecond)
-	rec.Write("duration", strconv.FormatInt(durMs, 10))
+	durMicro := int64(dur / time.Microsecond)
+	rec.Write("durmicro", strconv.FormatInt(durMicro, 10))
 
 	for k, v := range r.Header {
 		if !shouldLogHeader(k) {
