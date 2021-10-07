@@ -390,24 +390,26 @@ func Gen404Candidates(uri string) []string {
 	return res
 }
 
-func (s *Server) FindHandler(uri string) (HandlerFunc, bool) {
+func (s *Server) FindHandler(uri string) (h HandlerFunc, is404 bool) {
+	is404 = false
 	if strings.HasSuffix(uri, "/") {
 		uri = path.Join(uri, "/index.html")
 	}
-	if h := s.FindHandlerExact(uri); h != nil {
-		return h, false
+	if h = s.FindHandlerExact(uri); h != nil {
+		return
 	}
 	// if we support clean urls, try find "/foo.html" for "/foo"
 	if s.CleanURLS && !commonExt(uri) {
-		if h := s.FindHandlerExact(uri + ".html"); h != nil {
-			return h, false
+		if h = s.FindHandlerExact(uri + ".html"); h != nil {
+			return
 		}
 	}
 	// try 404.html
 	a := Gen404Candidates(uri)
 	for _, uri404 := range a {
-		if h := s.FindHandlerExact(uri404); h != nil {
-			return h, true
+		if h = s.FindHandlerExact(uri404); h != nil {
+			is404 = true
+			return
 		}
 	}
 	return nil, false
