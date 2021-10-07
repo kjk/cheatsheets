@@ -142,16 +142,6 @@ func StartServer(srv *server.Server) func() {
 	return StartHTTPServer(httpSrv)
 }
 
-func RunServerProd(srv *server.Server) {
-	httpSrv := MakeHTTPServer(srv)
-	logf(ctx(), "Starting server on http://%s'\n", httpSrv.Addr)
-	if isWindows() {
-		openBrowser(fmt.Sprintf("http://%s", httpSrv.Addr))
-	}
-	err := httpSrv.ListenAndServe()
-	logf(ctx(), "RunServerProd: httpSrv.ListenAndServe() returned '%s'\n", err)
-}
-
 // requestGetReferrer returns a referer e.g. "https://presstige.io/dashboard"
 func requestGetReferrer(r *http.Request) string {
 	return r.Header.Get("referer")
