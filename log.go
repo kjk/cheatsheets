@@ -339,7 +339,7 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 		// the log files smaller
 		ext := strings.ToLower(filepath.Ext(uri))
 		switch ext {
-		case ".css", ".js", ".ico":
+		case ".css", ".js", ".ico", ".png", ".jpg", ".jpeg", ".avif":
 			return false
 		}
 		if strings.HasPrefix(uri, "/ping") {
