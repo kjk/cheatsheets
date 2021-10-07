@@ -203,7 +203,7 @@ func recWriteNonEmpty(rec *siser.Record, k, v string) {
 func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	uri := r.URL.Path
 	if !strings.HasPrefix(uri, "/ping") {
-		logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+		logf(ctx(), "%s %d %s %s in %s\n", r.Method, code, r.RequestURI, formatSize(size), dur)
 	}
 
 	shouldLogURL := func() bool {
@@ -214,11 +214,8 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 		case ".css", ".js", ".ico", ".png", ".jpg", ".jpeg", ".avif":
 			return false
 		}
-		if strings.HasPrefix(uri, "/ping") {
-			// our internal health monitoring endpoint
-			return false
-		}
-		return true
+		// our internal health monitoring endpoint is called frequently
+		return !strings.HasPrefix(uri, "/ping")
 	}
 	if !shouldLogURL() {
 		return

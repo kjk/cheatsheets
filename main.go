@@ -108,7 +108,7 @@ func buildContentCheatsheets() []server.Handler {
 	return []server.Handler{csIndexDynamic, csDynamic}
 }
 
-func buildServerDynamic() *server.Server {
+func makeServerDynamic() *server.Server {
 	staticFiles := []string{
 		"/s/cheatsheet.css",
 		"cheatsheet.css",
@@ -142,13 +142,14 @@ func runServerDynamic() {
 	printLoggingStats()
 	logf(ctx(), "runServerDynamic starting\n")
 
-	srv := buildServerDynamic()
-
-	closeHTTPLog := openHTTPLog()
-	defer closeHTTPLog()
-
-	waitFn := StartServer(srv)
-	waitFn()
+	srv := makeServerDynamic()
+	httpSrv := makeHTTPServer(srv)
+	logf(ctx(), "Starting server on http://%s'\n", httpSrv.Addr)
+	if isWindows() {
+		openBrowser(fmt.Sprintf("http://%s", httpSrv.Addr))
+	}
+	err := httpSrv.ListenAndServe()
+	logf(ctx(), "runServerDynamic: httpSrv.ListenAndServe() returned '%s'\n", err)
 }
 
 func runServerProd() {
@@ -156,14 +157,16 @@ func runServerProd() {
 	panicIf(!dirExists(dirWwwGenerated))
 	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
 	logf(ctx(), "runServerProd starting, hasSpacesCreds: %v, %d urls\n", hasSpacesCreds(), len(h.URLS()))
+
+	closeHTTPLog := openHTTPLog()
+	defer closeHTTPLog()
+
 	srv := &server.Server{
 		Handlers:  []server.Handler{h},
 		CleanURLS: true,
 		Port:      httpPort,
 	}
-	closeHTTPLog := openHTTPLog()
-	defer closeHTTPLog() // TODO: this actually doesn't take in prod
-	httpSrv := MakeHTTPServer(srv)
+	httpSrv := makeHTTPServer(srv)
 	logf(ctx(), "Starting server on http://%s'\n", httpSrv.Addr)
 	if isWindows() {
 		openBrowser(fmt.Sprintf("http://%s", httpSrv.Addr))
@@ -177,7 +180,7 @@ func generateStatic() {
 	defer func() {
 		logf(ctx(), "generateStatic() finished in %s\n", formatDuration(time.Since(timeStart)))
 	}()
-	srv := buildServerDynamic()
+	srv := makeServerDynamic()
 	must(os.RemoveAll(dirWwwGenerated))
 
 	nFiles := 0
