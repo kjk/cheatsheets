@@ -6,10 +6,19 @@ layout: 2017/sheet
 
 ## Main
 
-Crontab is a Unix tool to schedule running a command at a given interval.
+Crontab is a Unix tool to schedule running a command at a given interval.<br>
 https://crontab.guru/ helps to understand cron syntax.
 
+Common tasks:
+* `echo "@reboot echo hi" | crontab` : add task that will run `echo hi` command on every reboot:
+* `crontab -e` : open cron config in an editor:
+* `crontab -l [-u user]` : list tasks
+
 ### Format
+
+Cron task consists of:
+* a command to execute
+* a pattern defining when the command will execute
 
 ```
 Min  Hour Day  Mon  Weekday
@@ -52,20 +61,3 @@ Min  Hour Day  Mon  Weekday
 | `0 0 * * 0`    | every Sunday midnight       |
 | ---            | ---                         |
 | `@reboot`      | every reboot                |
-
-### Crontab
-
-```bash
-# Adding tasks easily
-echo "@reboot echo hi" | crontab
-```
-
-```bash
-# Open in editor
-crontab -e
-```
-
-```bash
-# List tasks
-crontab -l [-u user]
-```
