@@ -329,9 +329,11 @@ func recWriteNonEmpty(rec *siser.Record, k, v string) {
 	}
 }
 func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
-	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
-
 	uri := r.URL.Path
+	if !strings.HasPrefix(uri, "/ping") {
+		logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
+	}
+
 	shouldLogURL := func() bool {
 		// we don't want to do deatiled logging for all files, to make
 		// the log files smaller
