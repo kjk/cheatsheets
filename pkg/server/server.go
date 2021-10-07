@@ -1,7 +1,9 @@
 package server
 
 import (
+	"archive/zip"
 	"bytes"
+	"compress/flate"
 	"fmt"
 	"io"
 	"io/fs"
@@ -448,4 +450,35 @@ func WriteServerFilesToDir(dir string, handlers []Handler, onWritten func(path s
 	}
 	IterContent(handlers, writeFile)
 	return err
+}
+
+func WriteServerFilesToZip(handlers []Handler, onWritten func(path string, d []byte)) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, flate.BestCompression)
+	})
+
+	zipWriteFile := func(zw *zip.Writer, name string, data []byte) error {
+		fw, err := zw.Create(name)
+		if err != nil {
+			return err
+		}
+		_, err = fw.Write(data)
+		return err
+	}
+
+	var err error
+	writeFile := func(uri string, d []byte) {
+		if err != nil {
+			return
+		}
+		name := strings.TrimPrefix(uri, "/")
+		err = zipWriteFile(zw, name, d)
+		if err != nil {
+			return
+		}
+	}
+	IterContent(handlers, writeFile)
+	return buf.Bytes(), err
 }
