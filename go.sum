@@ -32,8 +32,6 @@ github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/jtolds/gls v4.20.0+incompatible h1:xdiiI2gbIgH/gLH7ADydsJ1uDOEzR8yvV7C0MuV77Wo=
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
-github.com/kjk/atomicfile v0.0.0-20210818091506-2c406a58bae3 h1:hku3fyAaCPRl9aiOCdEMBX6wfgz2gcU9Uw6Jotcz004=
-github.com/kjk/atomicfile v0.0.0-20210818091506-2c406a58bae3/go.mod h1:+YlBbo63AHA3uS6tdRhd42B+I1lV7H7+aqDhwTRl5rs=
 github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f h1:X3X0zk+W4FIR4LvlT4BQbHMXM3rj2Ba6P4nZ8MkVPqM=
 github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f/go.mod h1:k2Pzb2Ix2MoXVfVLt3SeCEhwammA4PTgLxjDBhIUHoA=
 github.com/klauspost/cpuid v1.2.3/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=

@@ -7,7 +7,6 @@ require (
 	github.com/andybalholm/brotli v1.0.3
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
-	github.com/kjk/atomicfile v0.0.0-20210818091506-2c406a58bae3
 	github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f
 	github.com/minio/minio-go/v7 v7.0.14
 )

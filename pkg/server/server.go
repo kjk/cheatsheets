@@ -91,7 +91,7 @@ func (w *FileWriter) WriteHeader(statusCode int) {
 	// no-op
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, path string) {
+func serveFileMust(w http.ResponseWriter, r *http.Request, path string) {
 	if r == nil {
 		d := readFileMust(path)
 		_, err := w.Write(d)
@@ -130,7 +130,7 @@ func makeServeFile(path string) func(w http.ResponseWriter, r *http.Request) {
 			serve404FileCached(w, r, path, nil)
 			return
 		}
-		serveFile(w, r, path)
+		serveFileMust(w, r, path)
 	}
 }
 
