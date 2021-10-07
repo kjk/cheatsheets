@@ -72,37 +72,6 @@ func mimeTypeFromFileName(path string) string {
 	return ct
 }
 
-func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
-	nFiles := 0
-	totalSize := int64(0)
-	dirCreated := map[string]bool{}
-
-	writeFile := func(uri string, d []byte) {
-		name := strings.TrimPrefix(uri, "/")
-		name = filepath.FromSlash(name)
-		path := filepath.Join(dir, name)
-		// optimize for writing lots of files
-		// I assume that even a no-op os.MkdirAll()
-		// might be somewhat expensive
-		fileDir := filepath.Dir(path)
-		if !dirCreated[fileDir] {
-			must(os.MkdirAll(fileDir, 0755))
-			dirCreated[fileDir] = true
-		}
-		err := os.WriteFile(path, d, 0644)
-		must(err)
-		fsize := int64(len(d))
-		totalSize += fsize
-		sizeStr := formatSize(fsize)
-		if nFiles%256 == 0 {
-			logf(ctx(), "WriteServerFilesToDir: file %d '%s' of size %s\n", nFiles+1, path, sizeStr)
-		}
-		nFiles++
-	}
-	server.IterContent(handlers, writeFile)
-	return nFiles, totalSize
-}
-
 func MakeHTTPServer(srv *server.Server) *http.Server {
 	panicIf(srv == nil, "must provide srv")
 	httpPort := 8080

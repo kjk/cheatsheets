@@ -421,3 +421,31 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	http.NotFound(w, r)
 }
+
+func WriteServerFilesToDir(dir string, handlers []Handler, onWritten func(path string, d []byte)) error {
+	dirCreated := map[string]bool{}
+
+	var err error
+	writeFile := func(uri string, d []byte) {
+		if err != nil {
+			return
+		}
+		name := strings.TrimPrefix(uri, "/")
+		name = filepath.FromSlash(name)
+		path := filepath.Join(dir, name)
+		// optimize for writing lots of files
+		// I assume that even a no-op os.MkdirAll()
+		// might be somewhat expensive
+		fileDir := filepath.Dir(path)
+		if !dirCreated[fileDir] {
+			err = os.MkdirAll(fileDir, 0755)
+			if err != nil {
+				return
+			}
+			dirCreated[fileDir] = true
+		}
+		err = os.WriteFile(path, d, 0644)
+	}
+	IterContent(handlers, writeFile)
+	return err
+}
