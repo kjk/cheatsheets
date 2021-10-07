@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/kjk/cheatsheets/pkg/server"
-	"github.com/kjk/siser"
 )
 
 func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
@@ -43,12 +42,6 @@ func WriteServerFilesToDir(dir string, handlers []server.Handler) (int, int64) {
 	}
 	server.IterContent(handlers, writeFile)
 	return nFiles, totalSize
-}
-
-func recWriteNonEmpty(rec *siser.Record, k, v string) {
-	if v != "" {
-		rec.Write(k, v)
-	}
 }
 
 func MakeHTTPServer(srv *server.Server) *http.Server {

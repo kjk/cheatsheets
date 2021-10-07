@@ -323,6 +323,11 @@ func shouldLogHeader(s string) bool {
 	return !hdrsToNotLogMap[s]
 }
 
+func recWriteNonEmpty(rec *siser.Record, k, v string) {
+	if v != "" {
+		rec.Write(k, v)
+	}
+}
 func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	logf(ctx(), "%s %s %d in %s\n", r.Method, r.RequestURI, code, dur)
 
