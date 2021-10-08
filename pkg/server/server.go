@@ -314,12 +314,16 @@ func NewInMemoryFilesHandler(uri string, d []byte) *InMemoryFilesHandler {
 	return h
 }
 
-// IterContent calls a function for every url and its content
-func IterContent(handlers []Handler, fn func(uri string, d []byte)) {
+// IterContent calls a function for every url and (optionally) its content
+func IterURLS(handlers []Handler, withContent bool, fn func(uri string, d []byte)) {
 	var buf bytes.Buffer
 	for _, h := range handlers {
 		urls := h.URLS()
 		for _, uri := range urls {
+			if !withContent {
+				fn(uri, nil)
+				continue
+			}
 			buf.Reset()
 			fw := &FileWriter{
 				w: &buf,
@@ -330,6 +334,11 @@ func IterContent(handlers []Handler, fn func(uri string, d []byte)) {
 			fn(uri, buf.Bytes())
 		}
 	}
+}
+
+// IterContent calls a function for every url and its content
+func IterContent(handlers []Handler, fn func(uri string, d []byte)) {
+	IterURLS(handlers, true, fn)
 }
 
 type CapturingResponseWriter struct {
