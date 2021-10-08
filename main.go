@@ -156,6 +156,7 @@ func runServerProd() {
 	printLoggingStats()
 	panicIf(!dirExists(dirWwwGenerated))
 	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
+	h.TryServeCompressed = true
 	logf(ctx(), "runServerProd starting, hasSpacesCreds: %v, %d urls\n", hasSpacesCreds(), len(h.URLS()))
 
 	closeHTTPLog := OpenHTTPLog("cheatsheets")
