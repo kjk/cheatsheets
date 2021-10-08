@@ -7,6 +7,7 @@ require (
 	github.com/andybalholm/brotli v1.0.3
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
+	github.com/kjk/common v0.0.0-20211008225404-3c26e3f6fcec
 	github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f
 	github.com/minio/minio-go/v7 v7.0.14
 )
@@ -26,9 +27,9 @@ require (
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	golang.org/x/crypto v0.0.0-20201216223049-8b5274cf687f // indirect
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
-	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
+	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac // indirect
+	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

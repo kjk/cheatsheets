@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kjk/cheatsheets/pkg/server"
+	"github.com/kjk/common/server"
 )
 
 func httpGet(url string) ([]byte, error) {

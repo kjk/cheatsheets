@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kjk/cheatsheets/pkg/server"
+	"github.com/kjk/common/server"
 )
 
 const (
