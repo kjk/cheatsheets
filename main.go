@@ -158,7 +158,7 @@ func runServerProd() {
 	h := server.NewDirHandler(dirWwwGenerated, "/", nil)
 	logf(ctx(), "runServerProd starting, hasSpacesCreds: %v, %d urls\n", hasSpacesCreds(), len(h.URLS()))
 
-	closeHTTPLog := openHTTPLog()
+	closeHTTPLog := OpenHTTPLog("cheatsheets")
 	defer closeHTTPLog()
 
 	srv := &server.Server{

@@ -24,7 +24,7 @@ var (
 	httpLogSiser  *siser.Writer
 	httpLogRec    siser.Record
 	httpLogMu     sync.Mutex
-	httpLogApp    = "cheatsheets"
+	httpLogApp    = ""
 )
 
 func getLogsDir() string {
@@ -146,7 +146,8 @@ func NewLogHourly(dir string, didClose func(path string, didRotate bool)) (*file
 	return filerotate.New(&config)
 }
 
-func openHTTPLog() func() {
+func OpenHTTPLog(app string) func() {
+	panicIf(app == "")
 	dir := getLogsDir()
 
 	logFile, err := NewLogHourly(dir, didRotateHTTPLog)
@@ -200,24 +201,10 @@ func recWriteNonEmpty(rec *siser.Record, k, v string) {
 	}
 }
 
-func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
+func LogHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	uri := r.URL.Path
-	if !strings.HasPrefix(uri, "/ping") {
-		logf(ctx(), "%s %d %s %s in %s\n", r.Method, code, r.RequestURI, formatSize(size), dur)
-	}
-
-	shouldLogURL := func() bool {
-		// we don't want to do deatiled logging for all files, to make
-		// the log files smaller
-		ext := strings.ToLower(filepath.Ext(uri))
-		switch ext {
-		case ".css", ".js", ".ico", ".png", ".jpg", ".jpeg", ".avif":
-			return false
-		}
-		// our internal health monitoring endpoint is called frequently
-		return !strings.HasPrefix(uri, "/ping")
-	}
-	if !shouldLogURL() {
+	if strings.HasPrefix(uri, "/ping") {
+		// our internal health monitoring endpoint is called frequently, don't log
 		return
 	}
 
@@ -237,12 +224,24 @@ func logHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
 	durMicro := int64(dur / time.Microsecond)
 	rec.Write("durmicro", strconv.FormatInt(durMicro, 10))
 
-	for k, v := range r.Header {
-		if !shouldLogHeader(k) {
-			continue
+	// to minimize logging, we don't log headers if this is
+	// self-referal
+	skipLoggingHeaders := func() bool {
+		ref := r.Header.Get("Referer")
+		if ref == "" {
+			return false
 		}
-		if len(v) > 0 && len(v[0]) > 0 {
-			rec.Write(k, v[0])
+		return strings.Contains(ref, r.Host)
+	}
+
+	if !skipLoggingHeaders() {
+		for k, v := range r.Header {
+			if !shouldLogHeader(k) {
+				continue
+			}
+			if len(v) > 0 && len(v[0]) > 0 {
+				rec.Write(k, v[0])
+			}
 		}
 	}
 
