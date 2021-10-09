@@ -8,11 +8,11 @@ require (
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
 	github.com/kjk/common v0.0.0-20211009040353-eed800bc6e22
-	github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f
-	github.com/minio/minio-go/v7 v7.0.14
+	github.com/kjk/minio v0.0.0-20211009054212-7bcee50d3b76
 )
 
 require (
+	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -20,6 +20,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
+	github.com/minio/minio-go/v7 v7.0.14 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

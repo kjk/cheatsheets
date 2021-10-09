@@ -34,8 +34,12 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/kjk/common v0.0.0-20211009040353-eed800bc6e22 h1:LOn6PVgCCG6WbShbazIEoLq+ApXWpJN8c4DGGrc+KBs=
 github.com/kjk/common v0.0.0-20211009040353-eed800bc6e22/go.mod h1:bZoW8+ube8gSUMxdvIMVBw97o5gepeZqlCD8V+0MWXg=
-github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f h1:X3X0zk+W4FIR4LvlT4BQbHMXM3rj2Ba6P4nZ8MkVPqM=
-github.com/kjk/siser v0.0.0-20210621233355-17e67ed4384f/go.mod h1:k2Pzb2Ix2MoXVfVLt3SeCEhwammA4PTgLxjDBhIUHoA=
+github.com/kjk/minio v0.0.0-20211009051307-1b2a690e9a4b h1:i1a+fAdoGhqiTdpOydX3MHItWn3g+BI+zzRRFCsWquI=
+github.com/kjk/minio v0.0.0-20211009051307-1b2a690e9a4b/go.mod h1:mMeyVKBd7PoaIZruV7JaD8xVRmPeFMyKYsHAougkvMQ=
+github.com/kjk/minio v0.0.0-20211009054011-984fedca14cb h1:GqKDeZTFsc1nJhBHZzUigJsJEM06XWwCvbkgq+/mT7Q=
+github.com/kjk/minio v0.0.0-20211009054011-984fedca14cb/go.mod h1:eYBcBMN7/gpeWYxLvZpyGQfvnaUd20y14YCVaVYN4ow=
+github.com/kjk/minio v0.0.0-20211009054212-7bcee50d3b76 h1:wavO05TvdLlkE4teGhx/ciYFZQBq/b88LCUPpDIlLYY=
+github.com/kjk/minio v0.0.0-20211009054212-7bcee50d3b76/go.mod h1:eYBcBMN7/gpeWYxLvZpyGQfvnaUd20y14YCVaVYN4ow=
 github.com/klauspost/cpuid v1.2.3/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
 github.com/klauspost/cpuid v1.3.1 h1:5JNjFYYQrZeKRJ0734q51WCEEn2huer72Dc7K+R/b6s=
 github.com/klauspost/cpuid v1.3.1/go.mod h1:bYW4mA6ZgKPob1/Dlai2LviZJO7KGI3uoWLd42rAQw4=
@@ -47,7 +51,6 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/mattn/go-colorable v0.1.6/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
-github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/minio/md5-simd v1.1.0/go.mod h1:XpBqgZULrMYD3R+M28PcmP0CkI7PEMzB3U77ZrKZ0Gw=
@@ -97,7 +100,6 @@ golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v
 golang.org/x/net v0.0.0-20211008194852-3b03d305991f h1:1scJEYZBaF48BaG6tYbtxmLcXqwYGSfGcMoStTqkkIw=
 golang.org/x/net v0.0.0-20211008194852-3b03d305991f/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
-golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

@@ -12,7 +12,6 @@ var (
 	panicIf                  = u.PanicIf
 	isWindows                = u.IsWindows
 	openBrowser              = u.OpenBrowser
-	fileExists               = u.FileExists
 	dirExists                = u.DirExists
 	getFileSize              = u.FileSize
 	normalizeNewlinesInPlace = u.NormalizeNewlinesInPlace

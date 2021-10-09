@@ -17,7 +17,7 @@ func TestRemotePathFromFilePath(t *testing.T) {
 	for i := 0; i < n; i += 2 {
 		s := tests[i]
 		exp := tests[i+1]
-		got := remotePathFromFilePath(s)
+		got := remotePathFromFilePath("cheatsheet", s)
 		if exp != got {
 			t.Errorf("s:'%s', got: '%s', exp: '%s'", s, got, exp)
 		}
