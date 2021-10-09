@@ -2,75 +2,15 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"mime"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/kjk/common/server"
 )
-
-func httpGet(url string) ([]byte, error) {
-	// default timeout for http.Get() is really long, so dial it down
-	// for both connection and read/write timeouts
-	timeoutClient := newTimeoutClient(time.Second*120, time.Second*120)
-	resp, err := timeoutClient.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("'%s': status code not 200 (%d)", url, resp.StatusCode)
-	}
-	return ioutil.ReadAll(resp.Body)
-}
-
-// can be used for http.Get() requests with better timeouts. New one must be created
-// for each Get() request
-func newTimeoutClient(connectTimeout time.Duration, readWriteTimeout time.Duration) *http.Client {
-	timeoutDialer := func(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
-		return func(netw, addr string) (net.Conn, error) {
-			conn, err := net.DialTimeout(netw, addr, cTimeout)
-			if err != nil {
-				return nil, err
-			}
-			conn.SetDeadline(time.Now().Add(rwTimeout))
-			return conn, nil
-		}
-	}
-
-	return &http.Client{
-		Transport: &http.Transport{
-			Dial:  timeoutDialer(connectTimeout, readWriteTimeout),
-			Proxy: http.ProxyFromEnvironment,
-		},
-	}
-}
-
-var mimeTypes = map[string]string{
-	// not present in mime.TypeByExtension()
-	".txt": "text/plain",
-	".exe": "application/octet-stream",
-}
-
-func mimeTypeFromFileName(path string) string {
-	ext := strings.ToLower(filepath.Ext(path))
-	ct := mimeTypes[ext]
-	if ct == "" {
-		ct = mime.TypeByExtension(ext)
-	}
-	if ct == "" {
-		// if all else fails
-		ct = "application/octet-stream"
-	}
-	return ct
-}
 
 func logHTTPReqShort(r *http.Request, code int, size int64, dur time.Duration) {
 	if strings.HasPrefix(r.URL.Path, "/ping") {

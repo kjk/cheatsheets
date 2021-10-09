@@ -63,7 +63,3 @@ func compareCompr() {
 		logf(ctx(), "br: %d %s in %s %.2f%%\n", compSize, formatSize(compSize), dur, p)
 	}
 }
-
-func perc(total, sub int64) float64 {
-	return float64(sub) * 100 / float64(total)
-}

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kjk/common/httputil"
 	"github.com/kjk/common/server"
 )
 
@@ -201,7 +202,7 @@ func generateStatic() {
 func deployToRender() {
 	deployURL := os.Getenv("CHEATSHEETS_DEPLOY_HOOK")
 	panicIf(deployURL == "", "need env variable CHEATSHEETS_DEPLOY_HOOK")
-	d, err := httpGet(deployURL)
+	d, err := httputil.Get(deployURL)
 	must(err)
 	logf(ctx(), "deployed to render.com:\n%s\n", string(d))
 }
