@@ -46,12 +46,13 @@ func OpenHTTPLog(app string) func() {
 		}
 		go uploadCompressedHTTPLog(app, path)
 	}
-	logger, err := httplogger.New(dir, didRotate)
+	var err error
+	httpLogger, err = httplogger.New(dir, didRotate)
 	must(err)
 	// TODO: should I change filerotate so that it opens the file immedaitely?
 	logf(context.Background(), "opened http log file\n")
 	return func() {
-		logger.Close()
+		httpLogger.Close()
 	}
 }
 

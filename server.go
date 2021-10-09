@@ -204,6 +204,9 @@ func runServerDynamic() {
 	printLoggingStats()
 	logf(ctx(), "runServerDynamic starting\n")
 
+	closeHTTPLog := OpenHTTPLog("cheatsheets")
+	defer closeHTTPLog()
+
 	srv := makeServerDynamic()
 	httpSrv := makeHTTPServer(srv)
 	logf(ctx(), "Starting server on http://%s'\n", httpSrv.Addr)
