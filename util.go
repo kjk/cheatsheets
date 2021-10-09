@@ -13,11 +13,9 @@ var (
 	isWindows                = u.IsWindows
 	openBrowser              = u.OpenBrowser
 	dirExists                = u.DirExists
-	getFileSize              = u.FileSize
 	normalizeNewlinesInPlace = u.NormalizeNewlinesInPlace
 	formatSize               = u.FormatSize
 	formatDuration           = u.FormatDuration
-	mimeTypeFromFileName     = u.MimeTypeFromFileName
 	perc                     = u.Percent
 )
 
