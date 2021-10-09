@@ -34,6 +34,10 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/kjk/common v0.0.0-20211009040353-eed800bc6e22 h1:LOn6PVgCCG6WbShbazIEoLq+ApXWpJN8c4DGGrc+KBs=
 github.com/kjk/common v0.0.0-20211009040353-eed800bc6e22/go.mod h1:bZoW8+ube8gSUMxdvIMVBw97o5gepeZqlCD8V+0MWXg=
+github.com/kjk/common v0.0.0-20211009055738-db75bf46b993 h1:qndS2DLMuWdIzj4n7T7zOhLphv8sUjSh4knFsqXCEpk=
+github.com/kjk/common v0.0.0-20211009055738-db75bf46b993/go.mod h1:bZoW8+ube8gSUMxdvIMVBw97o5gepeZqlCD8V+0MWXg=
+github.com/kjk/common v0.0.0-20211009055927-6429b81d60b0 h1:dzclyfrOnnuh1hSHLNADpySDYCDztP5xyNNdZFYAqcs=
+github.com/kjk/common v0.0.0-20211009055927-6429b81d60b0/go.mod h1:bZoW8+ube8gSUMxdvIMVBw97o5gepeZqlCD8V+0MWXg=
 github.com/kjk/minio v0.0.0-20211009051307-1b2a690e9a4b h1:i1a+fAdoGhqiTdpOydX3MHItWn3g+BI+zzRRFCsWquI=
 github.com/kjk/minio v0.0.0-20211009051307-1b2a690e9a4b/go.mod h1:mMeyVKBd7PoaIZruV7JaD8xVRmPeFMyKYsHAougkvMQ=
 github.com/kjk/minio v0.0.0-20211009054011-984fedca14cb h1:GqKDeZTFsc1nJhBHZzUigJsJEM06XWwCvbkgq+/mT7Q=

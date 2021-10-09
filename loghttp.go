@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,39 +15,12 @@ var (
 	httpLogger *httplogger.Logger
 )
 
-// <dir>/httplog-2021-10-06_01.txt.br
-// =>
-//apps/cheatsheet/httplog/2021/10-06/2021-10-06_01.txt.br
-// return "" if <path> is in unexpected format
-func remotePathFromFilePath(app, path string) string {
-	name := filepath.Base(path)
-	parts := strings.Split(name, "_")
-	if len(parts) != 2 {
-		return ""
-	}
-	// parts[1]: 01.txt.br
-	hr := strings.Split(parts[1], ".")[0]
-	if len(hr) != 2 {
-		return ""
-	}
-	// parts[0]: httplog-2021-10-06
-	parts = strings.Split(parts[0], "-")
-	if len(parts) != 4 {
-		return ""
-	}
-	year := parts[1]
-	month := parts[2]
-	day := parts[3]
-	name = fmt.Sprintf("%s/%s-%s/%s-%s-%s_%s.txt.br", year, month, day, year, month, day, hr)
-	return fmt.Sprintf("apps/%s/httplog/%s", app, name)
-}
-
 // upload httplog-2021-10-06_01.txt as
-// apps/cheatsheet/httplog/2021/10-06/2021-10-06_01.txt.br
+// apps/${app}/httplog/2021/10-06/2021-10-06_01.txt.br
 func uploadCompressedHTTPLog(app, path string) {
 	timeStart := time.Now()
 	mc := newMinioSpacesClient()
-	remotePath := remotePathFromFilePath(app, path) + ".br"
+	remotePath := httplogger.RemotePathFromFilePath(app, path) + ".br"
 	if remotePath == "" {
 		logf(ctx(), "uploadCompressedHTTPLog: remotePathFromFilePath() failed for '%s'\n", path)
 		return
@@ -85,8 +56,7 @@ func OpenHTTPLog(app string) func() {
 }
 
 func LogHTTPReq(r *http.Request, code int, size int64, dur time.Duration) {
-	uri := r.URL.Path
-	if strings.HasPrefix(uri, "/ping") {
+	if strings.HasPrefix(r.URL.Path, "/ping") {
 		// our internal health monitoring endpoint is called frequently, don't log
 		return
 	}
