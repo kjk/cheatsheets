@@ -55,7 +55,7 @@ func OpenHTTPLog(app string) func() {
 	must(os.MkdirAll(dir, 0755))
 
 	didRotate := func(path string) {
-		canUpload := hasSpacesCreds()
+		canUpload := hasSpacesCreds() && !isWindows()
 		logf(ctx(), "didRotateHTTPLog: '%s', hasSpacesCreds: %v\n", path, canUpload)
 		if !canUpload {
 			return
