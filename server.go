@@ -36,13 +36,9 @@ func makeHTTPServer(srv *server.Server) *http.Server {
 		defer func() {
 			if p := recover(); p != nil {
 				logf(ctx(), "mainHandler: panicked with with %v\n", p)
-				http.Error(w, fmt.Sprintf("Error: %v", r), http.StatusInternalServerError)
-				logHTTPReqShort(r, http.StatusInternalServerError, 0, time.Since(timeStart))
-				LogHTTPReq(r, http.StatusInternalServerError, 0, time.Since(timeStart))
-			} else {
-				logHTTPReqShort(r, cw.StatusCode, cw.Size, time.Since(timeStart))
-				LogHTTPReq(r, cw.StatusCode, cw.Size, time.Since(timeStart))
+				http.Error(&cw, fmt.Sprintf("Error: %v", r), http.StatusInternalServerError)
 			}
+			logHTTPReq(r, cw.StatusCode, cw.Size, time.Since(timeStart))
 		}()
 
 		uri := r.URL.Path

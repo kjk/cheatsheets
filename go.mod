@@ -7,7 +7,7 @@ require (
 	github.com/andybalholm/brotli v1.0.3
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
-	github.com/kjk/common v0.0.0-20211009055927-6429b81d60b0
+	github.com/kjk/common v0.0.0-20211010082736-d33cbaeed6af
 	github.com/kjk/minio v0.0.0-20211009054212-7bcee50d3b76
 )
 
